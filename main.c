@@ -9,7 +9,7 @@ extern void yyrestart(FILE* f);
 extern int yyparse(void);
 
 /* 在 syntax.y 中定义并赋值的全局根节点 */
-extern ASTNode* g_root;
+extern ASTNode* ast_root;
 
 int main(int argc, char** argv) {
     if (argc <= 1) {
@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
        这里假设：
          - 词法错误：由词法器直接按格式打印（A 类），yyparse 可能仍返回 0/非 0；
          - 语法错误：yyerror 按格式打印（B 类），yyparse 非 0。
-       最稳妥做法：仅当 ret==0 且 g_root 非空时才打印语法树。 */
-    if (ret == 0 && g_root) {
-        ast_print(g_root, 0);
-        ast_free(g_root);
-        g_root = NULL;
+       最稳妥做法：仅当 ret==0 且 ast_root 非空时才打印语法树。 */
+    if (ret == 0 && ast_root) {
+        ast_print(ast_root, 0);
+        ast_free(ast_root);
+        ast_root = NULL;
     }
 
     return 0;

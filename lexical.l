@@ -86,7 +86,7 @@ whitespace      [ \t\r\n]
 {multi_comment}     { /* 丢弃多行注释 */ }
 {unclosed_multi}    { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
+    fprintf(stdout, "Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
 }
 
 {whitespace}        { /* 丢弃空白符 */ }
@@ -103,11 +103,11 @@ whitespace      [ \t\r\n]
 
 {illegal_octal}     { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Illegal octal number '%s'\n", yylineno, yytext); 
+    fprintf(stdout, "Error type A at Line %d: Illegal octal number '%s'\n", yylineno, yytext); 
 }
 {illegal_hex}       { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Illegal hexadecimal number '%s'\n", yylineno, yytext); 
+    fprintf(stdout, "Error type A at Line %d: Illegal hexadecimal number '%s'\n", yylineno, yytext); 
 }
 {hex}               { yylval.node = ast_new_int(strtoll(yytext, NULL, 16)); return INT; }
 {octal}             { yylval.node = ast_new_int(strtoll(yytext, NULL, 8)); return INT; }
@@ -115,7 +115,7 @@ whitespace      [ \t\r\n]
 
 {illegal_float}     { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Illegal floating point number '%s'\n", yylineno, yytext); 
+    fprintf(stdout, "Error type A at Line %d: Illegal floating point number '%s'\n", yylineno, yytext); 
 }
 {float_const}       { yylval.node = ast_new_float(atof(yytext)); return FLOAT; }
 
@@ -145,7 +145,7 @@ whitespace      [ \t\r\n]
 
 .                   { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Mysterious character '%s'\n", yylineno, yytext); 
+    fprintf(stdout, "Error type A at Line %d: Mysterious character '%s'\n", yylineno, yytext); 
 }
 
 %%
@@ -165,7 +165,7 @@ void copy_file_to_stdout(const char* filename) {
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        fprintf(stderr, "Usage: %s <C--_file>\n", argv[0]);
+        fprintf(stdout, "Usage: %s <C--_file>\n", argv[0]);
         return 1;
     }
     
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
         /* 没有错误，将临时文件内容输出到标准输出 */
         copy_file_to_stdout(temp_filename);
     }
-    /* 如果有错误，什么都不输出（错误信息已经输出到stderr） */
+    /* 如果有错误，什么都不输出（错误信息已经输出到stdout） */
     
     /* 清理临时文件 */
     unlink(temp_filename);
