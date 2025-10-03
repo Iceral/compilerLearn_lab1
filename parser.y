@@ -258,3 +258,8 @@ primary_expression:
 ;
 
 %%
+
+void yyerror(const char *s)
+{
+    printf("Error type B at Line %d: %s.\n", yylineno, s);
+}
