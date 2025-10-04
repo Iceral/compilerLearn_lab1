@@ -10,7 +10,8 @@ extern int yyparse(void);
 
 /* 在 syntax.y 中定义并赋值的全局根节点 */
 extern ASTNode* ast_root;
-
+extern int syntaxError;
+extern int lexical_error_occurred;
 int main(int argc, char** argv) {
     if (argc <= 1) {
         fprintf(stderr, "Usage: %s <input.cmm>\n", argv[0]);
@@ -29,7 +30,8 @@ int main(int argc, char** argv) {
          - 词法错误：由词法器直接按格式打印（A 类），yyparse 可能仍返回 0/非 0；
          - 语法错误：yyerror 按格式打印（B 类），yyparse 非 0。
        最稳妥做法：仅当 ret==0 且 ast_root 非空时才打印语法树。 */
-    if (ret == 0 && ast_root) {
+    if (syntaxError == 0 && lexical_error_occurred == 0) {
+        //ret == 0 && ast_root
         ast_print(ast_root, 0);
         ast_free(ast_root);
         ast_root = NULL;

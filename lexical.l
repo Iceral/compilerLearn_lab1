@@ -12,34 +12,6 @@
 #include <unistd.h>
 #include "syntax.tab.h"
 
-/*词法单元定义（后续与Bison结合时可替换为syntax.tab.h）*/
-#define INT 1
-#define FLOAT 2
-#define ID 3
-#define SEMI 4
-#define COMMA 5
-#define ASSIGNOP 6
-#define RELOP 7
-#define PLUS 8
-#define MINUS 9
-#define STAR 10
-#define DIV 11
-#define AND 12
-#define OR 13
-#define DOT 14
-#define NOT 15
-#define TYPE 16
-#define LP 17
-#define RP 18
-#define LB 19
-#define RB 20
-#define LC 21
-#define RC 22
-#define STRUCT 23
-#define RETURN 24
-#define IF 25
-#define ELSE 26
-#define WHILE 27
 
 /* 定义yylval用于传递AST节点 */
 

@@ -1,5 +1,5 @@
-int main(){
-    int a = 09;      /* 1. 非法八进制  -> Error type A */
-    float b = 1.2e;  /* 2. 非法指数    -> Error type A */
-    if (a)           /* 3. 缺右括号和分号 -> Error type B */
+int main()
+{
+int i = 09;
+int j = 0x3G;
 }

@@ -5,6 +5,8 @@
  * 错误处理：统计语法错误数量，输出错误行号及提示
  */
 
+%define parse.error detailed
+%define parse.lac full 
 %{
 // -------------------------- 头文件与全局变量声明 --------------------------
 #include <stdio.h>
@@ -35,6 +37,7 @@ void traverse_ast(const ASTNode *curr_node, int depth);
 // 词法分析器入口函数（从lex.yy.c导入）
 extern int yylex(void);
 %}
+
 
 // -------------------------- Bison核心配置 --------------------------
 // 定义语义值类型：使用联合体存储AST节点指针
