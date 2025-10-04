@@ -5,8 +5,6 @@
  * 错误处理：统计语法错误数量，输出错误行号及提示
  */
 
-%define parse.error detailed
-%define parse.lac full 
 %{
 // -------------------------- 头文件与全局变量声明 --------------------------
 #include <stdio.h>
@@ -345,7 +343,8 @@ StmtList: Stmt StmtList
 Stmt: Exp SEMI 
 {
     // 1. 表达式语句（如a = 1 + 2;、foo(3);）
-    $$ = create_ast_node("Stmt", @$.first_line);
+    // 关键：用SEMI的行号作为Stmt的行号
+    $$ = create_ast_node("Stmt", $1->line);
     add_child_nodes($$, 2, $1, $2);
 }
 | CompSt 

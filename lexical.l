@@ -49,7 +49,7 @@ unclosed_multi  "/\*"([^*]|\*+[^*/])*
 whitespace      [ \t\r\n]
 
 %%
-
+{whitespace}            { /* 忽略空白符 */ }
 {single_comment}    { /* 丢弃单行注释 */ }
 {multi_comment}     { /* 丢弃多行注释 */ }
 {unclosed_multi}    { 
@@ -57,7 +57,6 @@ whitespace      [ \t\r\n]
     printf("Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
 }
 
-{whitespace}        { /* 丢弃空白符 */ }
 
 "int"               { yylval.node = ast_new_type("int");ast_set_line(yylval.node, yylineno);    yylloc.first_line = yylineno;
     yylloc.last_line = yylineno; add_ast_node(yylval.node);return TYPE; }
@@ -74,7 +73,14 @@ whitespace      [ \t\r\n]
 "while"             { yylval.node = ast_new_token("WHILE");ast_set_line(yylval.node, yylineno);    yylloc.first_line = yylineno;
     yylloc.last_line = yylineno; add_ast_node(yylval.node);return WHILE; }
 
-{id}                { yylval.node = ast_new_id(yytext); return ID; }
+{id}                {    
+    yylval.node = ast_new_id(yytext); 
+    ast_set_line(yylval.node, yylineno);  // 1. 设置ID节点行号（关键）
+    yylloc.first_line = yylineno;         // 2. 同步行号给Bison（关键）
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node);            // 3. 加入AST链表（关键）
+    return ID; 
+     }
 
 {illegal_octal}     { 
     lexical_error_occurred = 1;
