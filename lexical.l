@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "syntax.tab.h"
 
 /*词法单元定义（后续与Bison结合时可替换为syntax.tab.h）*/
 #define INT 1
@@ -42,6 +41,12 @@
 #define WHILE 27
 
 /* 定义yylval用于传递AST节点 */
+#ifndef YYSTYPE
+typedef union {
+    ASTNode* node;
+} YYSTYPE;
+YYSTYPE yylval;
+#endif
 
 /* 错误标志 */
 int lexical_error_occurred = 0;
