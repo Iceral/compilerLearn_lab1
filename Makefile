@@ -1,4 +1,4 @@
-# GNU make手册：http://www.gnu.org/software/make/manual/make.html
+# GNU make手册：http://www.gnu.org/software/make/manual/make.html 
 # ************ 遇到不明白的地方请google以及阅读手册 *************
 
 # 编译器设定和编译选项
@@ -18,7 +18,7 @@ LFO = $(LFC:.c=.o)
 YFO = $(YFC:.c=.o)
 
 parser: syntax $(filter-out $(LFO),$(OBJS))
-	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl -ly
+	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl 
 
 syntax: lexical syntax-c
 	$(CC) -c $(YFC) -o $(YFO)

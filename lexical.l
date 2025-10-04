@@ -4,11 +4,13 @@
 %option noinput
 
 %{
+#include "lexical.h" 
 #include "tree.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "syntax.tab.h"
 
 /*词法单元定义（后续与Bison结合时可替换为syntax.tab.h）*/
 #define INT 1
@@ -40,19 +42,13 @@
 #define WHILE 27
 
 /* 定义yylval用于传递AST节点 */
-#ifndef YYSTYPE
-typedef union {
-    ASTNode* node;
-} YYSTYPE;
-YYSTYPE yylval;
-#endif
 
-/* 错误标志和临时文件 */
+/* 错误标志 */
 int lexical_error_occurred = 0;
-FILE* temp_output = NULL;
-char temp_filename[] = "/tmp/ast_output_XXXXXX";
+ASTNodeList* ast_node_list = NULL; 
 
 /*全局AST根节点（可选，用于打印）*/
+
 ASTNode* ast_root = NULL;
 %}
 
@@ -86,146 +82,107 @@ whitespace      [ \t\r\n]
 {multi_comment}     { /* 丢弃多行注释 */ }
 {unclosed_multi}    { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
+    printf("Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
 }
 
 {whitespace}        { /* 丢弃空白符 */ }
 
-"int"               { yylval.node = ast_new_type("int"); return TYPE; }
-"float"             { yylval.node = ast_new_type("float"); return TYPE; }
-"struct"            { yylval.node = ast_new_token("STRUCT"); return STRUCT; }
-"return"            { yylval.node = ast_new_token("RETURN"); return RETURN; }
-"if"                { yylval.node = ast_new_token("IF"); return IF; }
-"else"              { yylval.node = ast_new_token("ELSE"); return ELSE; }
-"while"             { yylval.node = ast_new_token("WHILE"); return WHILE; }
+"int"               { yylval.node = ast_new_type("int"); add_ast_node(yylval.node);return TYPE; }
+"float"             { yylval.node = ast_new_type("float"); add_ast_node(yylval.node);return TYPE; }
+"struct"            { yylval.node = ast_new_token("STRUCT"); add_ast_node(yylval.node);return STRUCT; }
+"return"            { yylval.node = ast_new_token("RETURN"); add_ast_node(yylval.node);return RETURN; }
+"if"                { yylval.node = ast_new_token("IF"); add_ast_node(yylval.node);return IF; }
+"else"              { yylval.node = ast_new_token("ELSE"); add_ast_node(yylval.node);return ELSE; }
+"while"             { yylval.node = ast_new_token("WHILE"); add_ast_node(yylval.node);return WHILE; }
 
 {id}                { yylval.node = ast_new_id(yytext); return ID; }
 
 {illegal_octal}     { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Illegal octal number '%s'\n", yylineno, yytext); 
+    printf("Error type A at Line %d: Illegal octal number '%s'\n", yylineno, yytext); 
 }
 {illegal_hex}       { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Illegal hexadecimal number '%s'\n", yylineno, yytext); 
+    printf("Error type A at Line %d: Illegal hexadecimal number '%s'\n", yylineno, yytext); 
 }
-{hex}               { yylval.node = ast_new_int(strtoll(yytext, NULL, 16)); return INT; }
-{octal}             { yylval.node = ast_new_int(strtoll(yytext, NULL, 8)); return INT; }
-{decimal}           { yylval.node = ast_new_int(strtoll(yytext, NULL, 10)); return INT; }
+{hex}               { yylval.node = ast_new_int(strtoll(yytext, NULL, 16));add_ast_node(yylval.node); return INT; }
+{octal}             { yylval.node = ast_new_int(strtoll(yytext, NULL, 8)); add_ast_node(yylval.node);return INT; }
+{decimal}           { yylval.node = ast_new_int(strtoll(yytext, NULL, 10)); add_ast_node(yylval.node);return INT; }
 
 {illegal_float}     { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Illegal floating point number '%s'\n", yylineno, yytext); 
+    printf("Error type A at Line %d: Illegal floating point number '%s'\n", yylineno, yytext); 
 }
-{float_const}       { yylval.node = ast_new_float(atof(yytext)); return FLOAT; }
+{float_const}       { yylval.node = ast_new_float(atof(yytext)); add_ast_node(yylval.node);return FLOAT; }
 
-";"                 { yylval.node = ast_new_token("SEMI"); return SEMI; }
-","                 { yylval.node = ast_new_token("COMMA"); return COMMA; }
-"="                 { yylval.node = ast_new_token("ASSIGNOP"); return ASSIGNOP; }
-">="                { yylval.node = ast_new_token("RELOP"); return RELOP; }
-"<="                { yylval.node = ast_new_token("RELOP"); return RELOP; }
-"=="                { yylval.node = ast_new_token("RELOP"); return RELOP; }
-"!="                { yylval.node = ast_new_token("RELOP"); return RELOP; }
-">"                 { yylval.node = ast_new_token("RELOP"); return RELOP; }
-"<"                 { yylval.node = ast_new_token("RELOP"); return RELOP; }
-"+"                 { yylval.node = ast_new_token("PLUS"); return PLUS; }
-"-"                 { yylval.node = ast_new_token("MINUS"); return MINUS; }
-"*"                 { yylval.node = ast_new_token("STAR"); return STAR; }
-"/"                 { yylval.node = ast_new_token("DIV"); return DIV; }
-"&&"                { yylval.node = ast_new_token("AND"); return AND; }
-"||"                { yylval.node = ast_new_token("OR"); return OR; }
-"."                 { yylval.node = ast_new_token("DOT"); return DOT; }
-"!"                 { yylval.node = ast_new_token("NOT"); return NOT; }
-"("                 { yylval.node = ast_new_token("LP"); return LP; }
-")"                 { yylval.node = ast_new_token("RP"); return RP; }
-"["                 { yylval.node = ast_new_token("LB"); return LB; }
-"]"                 { yylval.node = ast_new_token("RB"); return RB; }
-"{"                 { yylval.node = ast_new_token("LC"); return LC; }
-"}"                 { yylval.node = ast_new_token("RC"); return RC; }
+";"                 { yylval.node = ast_new_token("SEMI");add_ast_node(yylval.node); return SEMI; }
+","                 { yylval.node = ast_new_token("COMMA");add_ast_node(yylval.node); return COMMA; }
+"="                 { yylval.node = ast_new_token("ASSIGNOP");add_ast_node(yylval.node); return ASSIGNOP; }
+">="                { yylval.node = ast_new_token("RELOP");add_ast_node(yylval.node); return RELOP; }
+"<="                { yylval.node = ast_new_token("RELOP");add_ast_node(yylval.node); return RELOP; }
+"=="                { yylval.node = ast_new_token("RELOP"); add_ast_node(yylval.node);return RELOP; }
+"!="                { yylval.node = ast_new_token("RELOP");add_ast_node(yylval.node); return RELOP; }
+">"                 { yylval.node = ast_new_token("RELOP"); add_ast_node(yylval.node);return RELOP; }
+"<"                 { yylval.node = ast_new_token("RELOP");add_ast_node(yylval.node); return RELOP; }
+"+"                 { yylval.node = ast_new_token("PLUS"); add_ast_node(yylval.node);return PLUS; }
+"-"                 { yylval.node = ast_new_token("MINUS");add_ast_node(yylval.node); return MINUS; }
+"*"                 { yylval.node = ast_new_token("STAR");add_ast_node(yylval.node); return STAR; }
+"/"                 { yylval.node = ast_new_token("DIV");add_ast_node(yylval.node); return DIV; }
+"&&"                { yylval.node = ast_new_token("AND");add_ast_node(yylval.node); return AND; }
+"||"                { yylval.node = ast_new_token("OR"); add_ast_node(yylval.node);return OR; }
+"."                 { yylval.node = ast_new_token("DOT"); add_ast_node(yylval.node);return DOT; }
+"!"                 { yylval.node = ast_new_token("NOT"); add_ast_node(yylval.node);return NOT; }
+"("                 { yylval.node = ast_new_token("LP"); add_ast_node(yylval.node);return LP; }
+")"                 { yylval.node = ast_new_token("RP"); add_ast_node(yylval.node);return RP; }
+"["                 { yylval.node = ast_new_token("LB"); add_ast_node(yylval.node);return LB; }
+"]"                 { yylval.node = ast_new_token("RB"); add_ast_node(yylval.node);return RB; }
+"{"                 { yylval.node = ast_new_token("LC"); add_ast_node(yylval.node);return LC; }
+"}"                 { yylval.node = ast_new_token("RC"); add_ast_node(yylval.node);return RC; }
 
 .                   { 
     lexical_error_occurred = 1;
-    fprintf(stderr, "Error type A at Line %d: Mysterious character '%s'\n", yylineno, yytext); 
+    printf("Error type A at Line %d: Mysterious character '%s'\n", yylineno, yytext); 
 }
 
 %%
 
-/* 将文件内容复制到标准输出 */
-void copy_file_to_stdout(const char* filename) {
-    FILE* file = fopen(filename, "r");
-    if (!file) return;
+/* 添加AST节点到链表 */
+void add_ast_node(ASTNode* node) {
+    if (!node) return;
+    ASTNodeList* new_node = (ASTNodeList*)malloc(sizeof(ASTNodeList));
+    new_node->node = node;
+    new_node->next = NULL;  // 新节点指向空
     
-    char buffer[4096];
-    size_t bytes_read;
-    while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) > 0) {
-        fwrite(buffer, 1, bytes_read, stdout);
+    if (!ast_node_list) {
+        ast_node_list = new_node;  // 空链表时作为头节点
+    } else {
+        ASTNodeList* curr = ast_node_list;
+        while (curr->next) curr = curr->next;  // 找到尾部
+        curr->next = new_node;  // 尾插
     }
-    fclose(file);
 }
 
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <C--_file>\n", argv[0]);
-        return 1;
+/* 打印并释放所有AST节点 */
+void print_and_free_ast_nodes() {
+    ASTNodeList* current = ast_node_list;
+    while (current != NULL) {
+        ASTNodeList* next = current->next;
+        ast_print(current->node, 0);
+        ast_free(current->node);
+        free(current);
+        current = next;
     }
-    
-    FILE* f = fopen(argv[1], "r");
-    if (!f) { 
-        perror(argv[1]); 
-        return 1; 
-    }
-    yyin = f;
-    
-    /* 创建临时文件 */
-    int temp_fd = mkstemp(temp_filename);
-    if (temp_fd == -1) {
-        perror("mkstemp");
-        fclose(f);
-        return 1;
-    }
-    temp_output = fdopen(temp_fd, "w");
-    if (!temp_output) {
-        perror("fdopen");
-        close(temp_fd);
-        unlink(temp_filename);
-        fclose(f);
-        return 1;
-    }
-    
-    /* 保存原来的stdout */
-    FILE* original_stdout = stdout;
-    
-    /* 将stdout重定向到临时文件 */
-    stdout = temp_output;
-    
-    int token;
-    while ((token = yylex()) != 0) {
-        /* 继续处理所有token，不要因为错误而中断 */
-        /* 只有在没有错误的情况下才打印AST节点 */
-        if (!lexical_error_occurred && yylval.node) {
-            ast_print(yylval.node, 0);
-            ast_free(yylval.node);
-        } else if (yylval.node) {
-            /* 有错误时仍然要释放节点内存 */
-            ast_free(yylval.node);
-        }
-    }
-    
-    /* 恢复stdout */
-    stdout = original_stdout;
-    fclose(temp_output);
-    fclose(f);
-    
-    /* 根据是否有错误决定输出 */
-    if (!lexical_error_occurred) {
-        /* 没有错误，将临时文件内容输出到标准输出 */
-        copy_file_to_stdout(temp_filename);
-    }
-    /* 如果有错误，什么都不输出（错误信息已经输出到stderr） */
-    
-    /* 清理临时文件 */
-    unlink(temp_filename);
-    
-    return lexical_error_occurred ? 1 : 0;
+    ast_node_list = NULL;
 }
 
+/* 释放所有AST节点而不打印 */
+void free_ast_nodes() {
+    ASTNodeList* current = ast_node_list;
+    while (current != NULL) {
+        ASTNodeList* next = current->next;
+        ast_free(current->node);
+        free(current);
+        current = next;
+    }
+    ast_node_list = NULL;
+}
