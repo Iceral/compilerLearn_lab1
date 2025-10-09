@@ -91,7 +91,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 44 "./parser.y"
+#line 41 "./parser.y"
 
     struct ASTNode *node;  // 语义值为AST节点指针
 

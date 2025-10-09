@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 10 "./parser.y"
+#line 8 "./parser.y"
 
 // -------------------------- 头文件与全局变量声明 --------------------------
 #include <stdio.h>
@@ -93,12 +93,11 @@ ASTNode* ast_root;
 // AST节点操作函数声明
 ASTNode *create_ast_node(const char *node_name, int line_num);
 void add_child_nodes(ASTNode *parent, int arg_count, ...);
-void traverse_ast(const ASTNode *curr_node, int depth);
 
 // 词法分析器入口函数（从lex.yy.c导入）
 extern int yylex(void);
 
-#line 102 "./syntax.tab.c"
+#line 101 "./syntax.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -377,9 +376,33 @@ typedef int yy_state_fast_t;
 
 #define YY_ASSERT(E) ((void) (0 && (E)))
 
-#if 1
+#if !defined yyoverflow
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
+
+# ifdef YYSTACK_USE_ALLOCA
+#  if YYSTACK_USE_ALLOCA
+#   ifdef __GNUC__
+#    define YYSTACK_ALLOC __builtin_alloca
+#   elif defined __BUILTIN_VA_ARG_INCR
+#    include <alloca.h> /* INFRINGES ON USER NAME SPACE */
+#   elif defined _AIX
+#    define YYSTACK_ALLOC __alloca
+#   elif defined _MSC_VER
+#    include <malloc.h> /* INFRINGES ON USER NAME SPACE */
+#    define alloca _alloca
+#   else
+#    define YYSTACK_ALLOC alloca
+#    if ! defined _ALLOCA_H && ! defined EXIT_SUCCESS
+#     include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
+      /* Use EXIT_SUCCESS as a witness for stdlib.h.  */
+#     ifndef EXIT_SUCCESS
+#      define EXIT_SUCCESS 0
+#     endif
+#    endif
+#   endif
+#  endif
+# endif
 
 # ifdef YYSTACK_ALLOC
    /* Pacify GCC's 'empty if-body' warning.  */
@@ -418,8 +441,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 # endif
-# define YYCOPY_NEEDED 1
-#endif /* 1 */
+#endif /* !defined yyoverflow */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
@@ -487,16 +509,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  14
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   422
+#define YYLAST   401
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  32
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  22
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  85
+#define YYNRULES  84
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  152
+#define YYNSTATES  150
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   286
@@ -548,50 +570,53 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   131,   131,   142,   148,   154,   160,   166,   172,   177,
-     182,   189,   195,   201,   210,   216,   224,   230,   238,   245,
-     250,   259,   265,   271,   278,   284,   290,   295,   302,   308,
-     316,   325,   332,   339,   345,   351,   357,   363,   370,   376,
-     382,   387,   392,   397,   406,   412,   417,   422,   427,   434,
-     439,   447,   453,   463,   469,   475,   481,   487,   493,   499,
-     505,   511,   517,   523,   529,   535,   541,   547,   553,   559,
-     565,   572,   577,   582,   587,   592,   597,   602,   607,   612,
-     617,   622,   627,   632,   639,   645
+       0,   128,   128,   139,   145,   151,   157,   163,   169,   175,
+     181,   189,   195,   206,   212,   220,   226,   234,   241,   246,
+     255,   261,   267,   274,   280,   286,   291,   298,   304,   312,
+     321,   328,   335,   341,   348,   354,   360,   367,   373,   379,
+     384,   389,   394,   403,   409,   414,   419,   424,   431,   436,
+     444,   450,   460,   466,   472,   478,   484,   490,   496,   502,
+     508,   514,   520,   526,   532,   538,   544,   550,   556,   562,
+     569,   574,   579,   584,   589,   594,   599,   604,   609,   614,
+     619,   624,   629,   636,   642
 };
 #endif
 
 /** Accessing symbol of state STATE.  */
 #define YY_ACCESSING_SYMBOL(State) YY_CAST (yysymbol_kind_t, yystos[State])
 
-#if 1
+#if YYDEBUG || 0
 /* The user-facing name of the symbol whose (internal) number is
    YYSYMBOL.  No bounds checking.  */
 static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
 
-static const char *
-yysymbol_name (yysymbol_kind_t yysymbol)
+/* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+   First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
+static const char *const yytname[] =
 {
-  static const char *const yy_sname[] =
-  {
-  "end of file", "error", "invalid token", "INT", "FLOAT", "ID", "SEMI",
-  "COMMA", "ASSIGNOP", "RELOP", "PLUS", "MINUS", "STAR", "DIV", "AND",
-  "OR", "DOT", "NOT", "TYPE", "LP", "RP", "LB", "RB", "LC", "RC", "STRUCT",
-  "RETURN", "IF", "ELSE", "WHILE", "UMINUS", "LOWER_THAN_ELSE", "$accept",
-  "Program", "ExtDefList", "ExtDef", "ExtDecList", "Specifier",
+  "\"end of file\"", "error", "\"invalid token\"", "INT", "FLOAT", "ID",
+  "SEMI", "COMMA", "ASSIGNOP", "RELOP", "PLUS", "MINUS", "STAR", "DIV",
+  "AND", "OR", "DOT", "NOT", "TYPE", "LP", "RP", "LB", "RB", "LC", "RC",
+  "STRUCT", "RETURN", "IF", "ELSE", "WHILE", "UMINUS", "LOWER_THAN_ELSE",
+  "$accept", "Program", "ExtDefList", "ExtDef", "ExtDecList", "Specifier",
   "StructSpecifier", "OptTag", "Tag", "VarDec", "FunDec", "VarList",
   "ParamDec", "CompSt", "StmtList", "Stmt", "DefList", "Def", "DecList",
   "Dec", "Exp", "Args", YY_NULLPTR
-  };
-  return yy_sname[yysymbol];
+};
+
+static const char *
+yysymbol_name (yysymbol_kind_t yysymbol)
+{
+  return yytname[yysymbol];
 }
 #endif
 
-#define YYPACT_NINF (-132)
+#define YYPACT_NINF (-129)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-34)
+#define YYTABLE_NINF (-33)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -600,22 +625,21 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-       5,     4,  -132,    11,    75,  -132,    62,    19,  -132,  -132,
-      82,    67,    77,  -132,  -132,  -132,     2,    79,  -132,    95,
-     105,    84,  -132,    39,  -132,    39,    85,  -132,    90,    99,
-      52,    39,  -132,    46,    89,    39,    99,   107,   121,   111,
-    -132,   122,  -132,  -132,  -132,   119,   128,    55,   137,     7,
-      93,   149,  -132,  -132,   134,  -132,    39,  -132,  -132,  -132,
-    -132,   151,  -132,  -132,   139,   148,   165,   170,   187,   142,
-     145,  -132,   153,    55,   108,  -132,   284,  -132,  -132,    99,
-    -132,  -132,   143,  -132,    81,  -132,    81,   152,   326,   172,
-     124,   284,   284,  -132,  -132,   173,  -132,   192,   209,   214,
-     231,   236,   253,   258,   275,   175,   280,   368,  -132,   163,
-    -132,   297,   166,  -132,  -132,  -132,  -132,  -132,   340,   354,
-    -132,  -132,   368,  -132,   401,  -132,    33,  -132,    33,  -132,
-      81,  -132,    81,  -132,   394,  -132,   381,  -132,   177,   311,
-    -132,   284,  -132,    66,    66,  -132,  -132,  -132,   157,  -132,
-      66,  -132
+      24,    38,  -129,     3,    19,  -129,    24,   374,  -129,  -129,
+      58,    60,    61,  -129,  -129,  -129,     9,    62,  -129,    83,
+       0,    67,  -129,    -2,  -129,    -2,    30,  -129,    92,    59,
+      -2,  -129,    17,    76,    -2,    92,    91,   106,   107,  -129,
+     108,  -129,  -129,   104,   113,    42,   134,    46,    51,   135,
+    -129,  -129,   120,  -129,    -2,  -129,  -129,  -129,  -129,   137,
+    -129,  -129,   127,    74,   133,   150,   155,   130,   138,  -129,
+     139,    42,    93,  -129,   263,  -129,  -129,    92,  -129,  -129,
+     128,  -129,    66,  -129,    66,   142,   305,   158,   109,   263,
+     263,  -129,  -129,   159,  -129,   172,   177,   194,   199,   216,
+     221,   238,   243,   163,   260,   347,  -129,   151,  -129,   276,
+     164,  -129,  -129,  -129,  -129,  -129,   319,   333,  -129,  -129,
+     347,  -129,   380,  -129,   257,  -129,   257,  -129,    66,  -129,
+      66,  -129,   373,  -129,   360,  -129,   148,   290,  -129,   263,
+    -129,    69,    69,  -129,  -129,  -129,   157,  -129,    69,  -129
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -623,38 +647,37 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,    14,    19,     0,     2,     0,     0,    15,     8,
-       0,    20,     0,    17,     1,     3,     0,    21,     6,     0,
-       0,     0,    10,    45,     9,     0,     0,     5,     0,     0,
-       0,    45,     7,     0,     0,    45,     0,     0,    29,     0,
-      25,     0,    13,    21,    12,     0,     0,     0,     0,    51,
-       0,    49,    16,    44,    30,    27,     0,    26,    24,    23,
-      22,     0,    69,    70,    68,     0,     0,     0,     0,     0,
-       0,    35,     0,     0,     0,    47,     0,    48,    46,     0,
-      28,    40,     0,    80,    62,    81,    63,     0,     0,     0,
-       0,     0,     0,    31,    32,     0,    34,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    52,    50,     0,
-      65,    85,     0,    79,    61,    43,    42,    36,     0,     0,
-      41,    71,    53,    74,    56,    75,    57,    76,    58,    77,
-      59,    78,    60,    72,    54,    73,    55,    67,     0,     0,
-      82,     0,    64,     0,     0,    83,    66,    84,    37,    39,
-       0,    38
+       0,     0,    13,    18,     0,     2,     0,     0,    14,     8,
+       0,    19,     0,    16,     1,     3,     0,    20,     6,     0,
+      11,     0,    10,    44,     9,     0,     0,     5,     0,     0,
+      44,     7,     0,     0,    44,     0,     0,    28,     0,    24,
+       0,    20,    12,     0,     0,     0,     0,    50,     0,    48,
+      15,    43,    29,    26,     0,    25,    23,    22,    21,     0,
+      68,    69,    67,     0,     0,     0,     0,     0,     0,    34,
+       0,     0,     0,    46,     0,    47,    45,     0,    27,    39,
+       0,    79,    61,    80,    62,     0,     0,     0,     0,     0,
+       0,    30,    31,     0,    33,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,    51,    49,     0,    64,    84,
+       0,    78,    60,    42,    41,    35,     0,     0,    40,    70,
+      52,    73,    55,    74,    56,    75,    57,    76,    58,    77,
+      59,    71,    53,    72,    54,    66,     0,     0,    81,     0,
+      63,     0,     0,    82,    65,    83,    36,    38,     0,    37
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -132,  -132,     3,  -132,   171,    17,  -132,  -132,  -132,   -29,
-    -132,   -12,  -132,   180,   129,  -131,    30,  -132,   115,  -132,
-     -65,    64
+    -129,  -129,   173,  -129,   162,     4,  -129,  -129,  -129,   -26,
+    -129,   -14,  -129,   165,   116,  -128,    82,  -129,   115,  -129,
+     -63,    54
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     4,     5,     6,    19,     7,     8,    12,    13,    20,
-      21,    37,    38,    71,    72,    73,    34,    35,    50,    51,
-      74,   112
+       0,     4,     5,     6,    19,    32,     8,    12,    13,    20,
+      21,    36,    37,    69,    70,    71,    33,    34,    48,    49,
+      72,   110
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -662,96 +685,92 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      84,    86,    88,    90,    49,    -4,     1,    54,    24,    15,
-       9,   107,   148,   149,    41,    76,    11,   111,    10,   151,
-      16,    25,     2,     2,    17,    18,   118,   119,    30,     3,
-       3,    42,   122,   124,   126,   128,   130,   132,   134,   136,
-      33,   139,    36,    36,    80,   101,   102,    48,    33,   105,
-      49,    43,    33,    45,   106,    46,    61,     2,    62,    63,
-      64,    47,    -4,     1,     3,    53,    65,    61,    -4,    62,
-      63,    64,    66,    36,    67,    14,   111,    65,    31,   -33,
-       2,    68,    69,    66,    70,    67,    39,     3,    22,    31,
-     -18,     1,    68,    69,    77,    70,    -4,   105,    26,    78,
-      23,    27,   106,     2,    43,    40,    28,    31,     2,    95,
-       3,   -11,    29,    52,    96,     3,    97,    98,    99,   100,
-     101,   102,   103,   104,   105,   116,    30,    55,    56,   106,
-     117,    57,    97,    98,    99,   100,   101,   102,   103,   104,
-     105,    59,    58,    75,   109,   106,    62,    63,    64,    83,
-      60,    62,    63,    64,    65,    30,    79,    81,    82,    65,
-      66,    91,    67,   110,    92,    66,    85,    67,    62,    63,
-      64,    87,   113,    62,    63,    64,    65,    93,   115,   120,
-     137,    65,    66,   140,    67,   150,   142,    66,    89,    67,
-      62,    63,    64,   121,   108,    62,    63,    64,    65,   145,
-      44,    32,    94,    65,    66,   147,    67,     0,     0,    66,
-     123,    67,    62,    63,    64,   125,     0,    62,    63,    64,
-      65,     0,     0,     0,     0,    65,    66,     0,    67,     0,
-       0,    66,   127,    67,    62,    63,    64,   129,     0,    62,
-      63,    64,    65,     0,     0,     0,     0,    65,    66,     0,
-      67,     0,     0,    66,   131,    67,    62,    63,    64,   133,
-       0,    62,    63,    64,    65,     0,     0,     0,     0,    65,
-      66,     0,    67,     0,     0,    66,   135,    67,    62,    63,
-      64,   138,     0,    62,    63,    64,    65,    62,    63,    64,
-       0,    65,    66,     0,    67,    65,     0,    66,     0,    67,
-       0,    66,     0,    67,   141,    97,    98,    99,   100,   101,
-     102,   103,   104,   105,     0,     0,     0,     0,   106,    97,
-      98,    99,   100,   101,   102,   103,   104,   105,     0,     0,
-       0,     0,   106,   146,    97,    98,    99,   100,   101,   102,
-     103,   104,   105,     0,     0,     0,   114,   106,    97,    98,
-      99,   100,   101,   102,   103,   104,   105,     0,     0,     0,
-     143,   106,    97,    98,    99,   100,   101,   102,   103,   104,
-     105,     0,     0,     0,   144,   106,    97,    98,    99,   100,
-     101,   102,   103,   104,   105,     0,     0,     0,     0,   106,
-      98,    99,   100,   101,   102,   103,     0,   105,     0,     0,
-       0,     0,   106,    98,    99,   100,   101,   102,     0,     0,
-     105,    99,   100,   101,   102,   106,     0,   105,     0,     0,
-       0,     0,   106
+      82,    84,    86,    88,     7,    10,    47,    28,    11,    52,
+       7,   105,    40,   146,   147,    24,     2,   109,    46,    14,
+     149,    29,    41,     3,    -4,     1,   116,   117,    25,    35,
+      35,    38,   120,   122,   124,   126,   128,   130,   132,   134,
+      78,   137,     2,    59,     9,    60,    61,    62,     2,     3,
+      39,    47,    75,    63,    74,     3,     2,    76,    35,    64,
+      43,    65,    44,     3,    22,    30,   -32,    29,    66,    67,
+      59,    68,    60,    61,    62,    81,   109,    60,    61,    62,
+      63,    26,   103,   -17,    23,    63,    64,   104,    65,    27,
+      30,    64,    30,    65,    93,    66,    67,    41,    68,    94,
+      50,    95,    96,    97,    98,    99,   100,   101,   102,   103,
+     114,    53,    45,    54,   104,   115,    51,    95,    96,    97,
+      98,    99,   100,   101,   102,   103,    57,    55,    56,   107,
+     104,    60,    61,    62,    83,    58,    60,    61,    62,    63,
+      73,    29,    77,    79,    63,    64,    80,    65,   108,    89,
+      64,    85,    65,    60,    61,    62,    87,    90,    60,    61,
+      62,    63,   111,    91,   113,   118,    63,    64,   135,    65,
+     143,   138,    64,   119,    65,    60,    61,    62,   121,    15,
+      60,    61,    62,    63,   140,   148,    31,    92,    63,    64,
+      42,    65,   106,   145,    64,   123,    65,    60,    61,    62,
+     125,     0,    60,    61,    62,    63,     0,     0,     0,     0,
+      63,    64,     0,    65,     0,     0,    64,   127,    65,    60,
+      61,    62,   129,     0,    60,    61,    62,    63,     0,     0,
+       0,     0,    63,    64,     0,    65,     0,     0,    64,   131,
+      65,    60,    61,    62,   133,     0,    60,    61,    62,    63,
+       0,     0,     0,     0,    63,    64,     0,    65,     0,     0,
+      64,   136,    65,    60,    61,    62,    60,    61,    62,    99,
+     100,    63,     0,   103,    63,     0,     0,    64,   104,    65,
+      64,     0,    65,   139,    95,    96,    97,    98,    99,   100,
+     101,   102,   103,     0,     0,     0,     0,   104,    95,    96,
+      97,    98,    99,   100,   101,   102,   103,     0,     0,     0,
+       0,   104,   144,    95,    96,    97,    98,    99,   100,   101,
+     102,   103,     0,     0,     0,   112,   104,    95,    96,    97,
+      98,    99,   100,   101,   102,   103,     0,     0,     0,   141,
+     104,    95,    96,    97,    98,    99,   100,   101,   102,   103,
+       0,     0,     0,   142,   104,    95,    96,    97,    98,    99,
+     100,   101,   102,   103,     0,     0,     0,     0,   104,    96,
+      97,    98,    99,   100,   101,    16,   103,     0,     0,    17,
+      18,   104,    96,    97,    98,    99,   100,     0,     0,   103,
+      97,    98,    99,   100,   104,     0,   103,     0,     0,     0,
+       0,   104
 };
 
 static const yytype_int16 yycheck[] =
 {
-      65,    66,    67,    68,    33,     0,     1,    36,     6,     6,
-       6,    76,   143,   144,    26,     8,     5,    82,     1,   150,
-       1,    19,    18,    18,     5,     6,    91,    92,    21,    25,
-      25,    28,    97,    98,    99,   100,   101,   102,   103,   104,
-      23,   106,    25,    26,    56,    12,    13,     1,    31,    16,
-      79,     5,    35,     1,    21,     3,     1,    18,     3,     4,
-       5,    31,     0,     1,    25,    35,    11,     1,     6,     3,
-       4,     5,    17,    56,    19,     0,   141,    11,    23,    24,
-      18,    26,    27,    17,    29,    19,     1,    25,     6,    23,
-      23,     1,    26,    27,     1,    29,     6,    16,    19,     6,
-      23,     6,    21,    18,     5,    20,     1,    23,    18,     1,
-      25,     6,     7,    24,     6,    25,     8,     9,    10,    11,
-      12,    13,    14,    15,    16,     1,    21,    20,     7,    21,
-       6,    20,     8,     9,    10,    11,    12,    13,    14,    15,
-      16,    22,    20,     6,     1,    21,     3,     4,     5,     1,
-      22,     3,     4,     5,    11,    21,     7,     6,    19,    11,
-      17,    19,    19,    20,    19,    17,     1,    19,     3,     4,
-       5,     1,    20,     3,     4,     5,    11,    24,     6,     6,
-       5,    11,    17,    20,    19,    28,    20,    17,     1,    19,
-       3,     4,     5,     1,    79,     3,     4,     5,    11,    22,
-      29,    21,    73,    11,    17,   141,    19,    -1,    -1,    17,
-       1,    19,     3,     4,     5,     1,    -1,     3,     4,     5,
-      11,    -1,    -1,    -1,    -1,    11,    17,    -1,    19,    -1,
-      -1,    17,     1,    19,     3,     4,     5,     1,    -1,     3,
-       4,     5,    11,    -1,    -1,    -1,    -1,    11,    17,    -1,
-      19,    -1,    -1,    17,     1,    19,     3,     4,     5,     1,
-      -1,     3,     4,     5,    11,    -1,    -1,    -1,    -1,    11,
-      17,    -1,    19,    -1,    -1,    17,     1,    19,     3,     4,
-       5,     1,    -1,     3,     4,     5,    11,     3,     4,     5,
-      -1,    11,    17,    -1,    19,    11,    -1,    17,    -1,    19,
-      -1,    17,    -1,    19,     7,     8,     9,    10,    11,    12,
-      13,    14,    15,    16,    -1,    -1,    -1,    -1,    21,     8,
-       9,    10,    11,    12,    13,    14,    15,    16,    -1,    -1,
-      -1,    -1,    21,    22,     8,     9,    10,    11,    12,    13,
-      14,    15,    16,    -1,    -1,    -1,    20,    21,     8,     9,
+      63,    64,    65,    66,     0,     1,    32,     7,     5,    35,
+       6,    74,    26,   141,   142,     6,    18,    80,     1,     0,
+     148,    21,     5,    25,     0,     1,    89,    90,    19,    25,
+      26,     1,    95,    96,    97,    98,    99,   100,   101,   102,
+      54,   104,    18,     1,     6,     3,     4,     5,    18,    25,
+      20,    77,     1,    11,     8,    25,    18,     6,    54,    17,
+       1,    19,     3,    25,     6,    23,    24,    21,    26,    27,
+       1,    29,     3,     4,     5,     1,   139,     3,     4,     5,
+      11,    19,    16,    23,    23,    11,    17,    21,    19,     6,
+      23,    17,    23,    19,     1,    26,    27,     5,    29,     6,
+      24,     8,     9,    10,    11,    12,    13,    14,    15,    16,
+       1,    20,    30,     7,    21,     6,    34,     8,     9,    10,
+      11,    12,    13,    14,    15,    16,    22,    20,    20,     1,
+      21,     3,     4,     5,     1,    22,     3,     4,     5,    11,
+       6,    21,     7,     6,    11,    17,    19,    19,    20,    19,
+      17,     1,    19,     3,     4,     5,     1,    19,     3,     4,
+       5,    11,    20,    24,     6,     6,    11,    17,     5,    19,
+      22,    20,    17,     1,    19,     3,     4,     5,     1,     6,
+       3,     4,     5,    11,    20,    28,    21,    71,    11,    17,
+      28,    19,    77,   139,    17,     1,    19,     3,     4,     5,
+       1,    -1,     3,     4,     5,    11,    -1,    -1,    -1,    -1,
+      11,    17,    -1,    19,    -1,    -1,    17,     1,    19,     3,
+       4,     5,     1,    -1,     3,     4,     5,    11,    -1,    -1,
+      -1,    -1,    11,    17,    -1,    19,    -1,    -1,    17,     1,
+      19,     3,     4,     5,     1,    -1,     3,     4,     5,    11,
+      -1,    -1,    -1,    -1,    11,    17,    -1,    19,    -1,    -1,
+      17,     1,    19,     3,     4,     5,     3,     4,     5,    12,
+      13,    11,    -1,    16,    11,    -1,    -1,    17,    21,    19,
+      17,    -1,    19,     7,     8,     9,    10,    11,    12,    13,
+      14,    15,    16,    -1,    -1,    -1,    -1,    21,     8,     9,
       10,    11,    12,    13,    14,    15,    16,    -1,    -1,    -1,
-      20,    21,     8,     9,    10,    11,    12,    13,    14,    15,
-      16,    -1,    -1,    -1,    20,    21,     8,     9,    10,    11,
-      12,    13,    14,    15,    16,    -1,    -1,    -1,    -1,    21,
-       9,    10,    11,    12,    13,    14,    -1,    16,    -1,    -1,
-      -1,    -1,    21,     9,    10,    11,    12,    13,    -1,    -1,
-      16,    10,    11,    12,    13,    21,    -1,    16,    -1,    -1,
-      -1,    -1,    21
+      -1,    21,    22,     8,     9,    10,    11,    12,    13,    14,
+      15,    16,    -1,    -1,    -1,    20,    21,     8,     9,    10,
+      11,    12,    13,    14,    15,    16,    -1,    -1,    -1,    20,
+      21,     8,     9,    10,    11,    12,    13,    14,    15,    16,
+      -1,    -1,    -1,    20,    21,     8,     9,    10,    11,    12,
+      13,    14,    15,    16,    -1,    -1,    -1,    -1,    21,     9,
+      10,    11,    12,    13,    14,     1,    16,    -1,    -1,     5,
+       6,    21,     9,    10,    11,    12,    13,    -1,    -1,    16,
+      10,    11,    12,    13,    21,    -1,    16,    -1,    -1,    -1,
+      -1,    21
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -760,48 +779,47 @@ static const yytype_int8 yystos[] =
 {
        0,     1,    18,    25,    33,    34,    35,    37,    38,     6,
       37,     5,    39,    40,     0,    34,     1,     5,     6,    36,
-      41,    42,     6,    23,     6,    19,    19,     6,     1,     7,
-      21,    23,    45,    37,    48,    49,    37,    43,    44,     1,
-      20,    43,    34,     5,    36,     1,     3,    48,     1,    41,
-      50,    51,    24,    48,    41,    20,     7,    20,    20,    22,
-      22,     1,     3,     4,     5,    11,    17,    19,    26,    27,
-      29,    45,    46,    47,    52,     6,     8,     1,     6,     7,
-      43,     6,    19,     1,    52,     1,    52,     1,    52,     1,
-      52,    19,    19,    24,    46,     1,     6,     8,     9,    10,
-      11,    12,    13,    14,    15,    16,    21,    52,    50,     1,
-      20,    52,    53,    20,    20,     6,     1,     6,    52,    52,
-       6,     1,    52,     1,    52,     1,    52,     1,    52,     1,
-      52,     1,    52,     1,    52,     1,    52,     5,     1,    52,
-      20,     7,    20,    20,    20,    22,    22,    53,    47,    47,
-      28,    47
+      41,    42,     6,    23,     6,    19,    19,     6,     7,    21,
+      23,    45,    37,    48,    49,    37,    43,    44,     1,    20,
+      43,     5,    36,     1,     3,    48,     1,    41,    50,    51,
+      24,    48,    41,    20,     7,    20,    20,    22,    22,     1,
+       3,     4,     5,    11,    17,    19,    26,    27,    29,    45,
+      46,    47,    52,     6,     8,     1,     6,     7,    43,     6,
+      19,     1,    52,     1,    52,     1,    52,     1,    52,    19,
+      19,    24,    46,     1,     6,     8,     9,    10,    11,    12,
+      13,    14,    15,    16,    21,    52,    50,     1,    20,    52,
+      53,    20,    20,     6,     1,     6,    52,    52,     6,     1,
+      52,     1,    52,     1,    52,     1,    52,     1,    52,     1,
+      52,     1,    52,     1,    52,     5,     1,    52,    20,     7,
+      20,    20,    20,    22,    22,    53,    47,    47,    28,    47
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
        0,    32,    33,    34,    34,    35,    35,    35,    35,    35,
-      35,    36,    36,    36,    37,    37,    38,    38,    39,    39,
-      40,    41,    41,    41,    42,    42,    42,    42,    43,    43,
-      44,    45,    46,    46,    47,    47,    47,    47,    47,    47,
-      47,    47,    47,    47,    48,    48,    49,    49,    49,    50,
-      50,    51,    51,    52,    52,    52,    52,    52,    52,    52,
+      35,    36,    36,    37,    37,    38,    38,    39,    39,    40,
+      41,    41,    41,    42,    42,    42,    42,    43,    43,    44,
+      45,    46,    46,    47,    47,    47,    47,    47,    47,    47,
+      47,    47,    47,    48,    48,    49,    49,    49,    50,    50,
+      51,    51,    52,    52,    52,    52,    52,    52,    52,    52,
       52,    52,    52,    52,    52,    52,    52,    52,    52,    52,
       52,    52,    52,    52,    52,    52,    52,    52,    52,    52,
-      52,    52,    52,    52,    53,    53
+      52,    52,    52,    53,    53
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     2,     0,     3,     2,     3,     2,     3,
-       3,     1,     3,     3,     1,     1,     5,     2,     1,     0,
-       1,     1,     4,     4,     4,     3,     4,     4,     3,     1,
-       2,     4,     2,     0,     2,     1,     3,     5,     7,     5,
-       2,     3,     3,     3,     2,     0,     3,     3,     3,     1,
-       3,     1,     3,     3,     3,     3,     3,     3,     3,     3,
-       3,     3,     2,     2,     4,     3,     4,     3,     1,     1,
+       3,     1,     3,     1,     1,     5,     2,     1,     0,     1,
+       1,     4,     4,     4,     3,     4,     4,     3,     1,     2,
+       4,     2,     0,     2,     1,     3,     5,     7,     5,     2,
+       3,     3,     3,     2,     0,     3,     3,     3,     1,     3,
        1,     3,     3,     3,     3,     3,     3,     3,     3,     3,
-       2,     2,     4,     4,     3,     1
+       3,     2,     2,     4,     3,     4,     3,     1,     1,     1,
+       3,     3,     3,     3,     3,     3,     3,     3,     3,     2,
+       2,     4,     4,     3,     1
 };
 
 
@@ -826,7 +844,6 @@ enum { YYENOMEM = -2 };
         yylval = (Value);                                         \
         YYPOPSTACK (yylen);                                       \
         yystate = *yyssp;                                         \
-        YY_LAC_DISCARD ("YYBACKUP");                              \
         goto yybackup;                                            \
       }                                                           \
     else                                                          \
@@ -1072,473 +1089,8 @@ int yydebug;
 #endif
 
 
-/* Given a state stack such that *YYBOTTOM is its bottom, such that
-   *YYTOP is either its top or is YYTOP_EMPTY to indicate an empty
-   stack, and such that *YYCAPACITY is the maximum number of elements it
-   can hold without a reallocation, make sure there is enough room to
-   store YYADD more elements.  If not, allocate a new stack using
-   YYSTACK_ALLOC, copy the existing elements, and adjust *YYBOTTOM,
-   *YYTOP, and *YYCAPACITY to reflect the new capacity and memory
-   location.  If *YYBOTTOM != YYBOTTOM_NO_FREE, then free the old stack
-   using YYSTACK_FREE.  Return 0 if successful or if no reallocation is
-   required.  Return YYENOMEM if memory is exhausted.  */
-static int
-yy_lac_stack_realloc (YYPTRDIFF_T *yycapacity, YYPTRDIFF_T yyadd,
-#if YYDEBUG
-                      char const *yydebug_prefix,
-                      char const *yydebug_suffix,
-#endif
-                      yy_state_t **yybottom,
-                      yy_state_t *yybottom_no_free,
-                      yy_state_t **yytop, yy_state_t *yytop_empty)
-{
-  YYPTRDIFF_T yysize_old =
-    *yytop == yytop_empty ? 0 : *yytop - *yybottom + 1;
-  YYPTRDIFF_T yysize_new = yysize_old + yyadd;
-  if (*yycapacity < yysize_new)
-    {
-      YYPTRDIFF_T yyalloc = 2 * yysize_new;
-      yy_state_t *yybottom_new;
-      /* Use YYMAXDEPTH for maximum stack size given that the stack
-         should never need to grow larger than the main state stack
-         needs to grow without LAC.  */
-      if (YYMAXDEPTH < yysize_new)
-        {
-          YYDPRINTF ((stderr, "%smax size exceeded%s", yydebug_prefix,
-                      yydebug_suffix));
-          return YYENOMEM;
-        }
-      if (YYMAXDEPTH < yyalloc)
-        yyalloc = YYMAXDEPTH;
-      yybottom_new =
-        YY_CAST (yy_state_t *,
-                 YYSTACK_ALLOC (YY_CAST (YYSIZE_T,
-                                         yyalloc * YYSIZEOF (*yybottom_new))));
-      if (!yybottom_new)
-        {
-          YYDPRINTF ((stderr, "%srealloc failed%s", yydebug_prefix,
-                      yydebug_suffix));
-          return YYENOMEM;
-        }
-      if (*yytop != yytop_empty)
-        {
-          YYCOPY (yybottom_new, *yybottom, yysize_old);
-          *yytop = yybottom_new + (yysize_old - 1);
-        }
-      if (*yybottom != yybottom_no_free)
-        YYSTACK_FREE (*yybottom);
-      *yybottom = yybottom_new;
-      *yycapacity = yyalloc;
-    }
-  return 0;
-}
-
-/* Establish the initial context for the current lookahead if no initial
-   context is currently established.
-
-   We define a context as a snapshot of the parser stacks.  We define
-   the initial context for a lookahead as the context in which the
-   parser initially examines that lookahead in order to select a
-   syntactic action.  Thus, if the lookahead eventually proves
-   syntactically unacceptable (possibly in a later context reached via a
-   series of reductions), the initial context can be used to determine
-   the exact set of tokens that would be syntactically acceptable in the
-   lookahead's place.  Moreover, it is the context after which any
-   further semantic actions would be erroneous because they would be
-   determined by a syntactically unacceptable token.
-
-   YY_LAC_ESTABLISH should be invoked when a reduction is about to be
-   performed in an inconsistent state (which, for the purposes of LAC,
-   includes consistent states that don't know they're consistent because
-   their default reductions have been disabled).  Iff there is a
-   lookahead token, it should also be invoked before reporting a syntax
-   error.  This latter case is for the sake of the debugging output.
-
-   For parse.lac=full, the implementation of YY_LAC_ESTABLISH is as
-   follows.  If no initial context is currently established for the
-   current lookahead, then check if that lookahead can eventually be
-   shifted if syntactic actions continue from the current context.
-   Report a syntax error if it cannot.  */
-#define YY_LAC_ESTABLISH                                                \
-do {                                                                    \
-  if (!yy_lac_established)                                              \
-    {                                                                   \
-      YYDPRINTF ((stderr,                                               \
-                  "LAC: initial context established for %s\n",          \
-                  yysymbol_name (yytoken)));                            \
-      yy_lac_established = 1;                                           \
-      switch (yy_lac (yyesa, &yyes, &yyes_capacity, yyssp, yytoken))    \
-        {                                                               \
-        case YYENOMEM:                                                  \
-          YYNOMEM;                                                      \
-        case 1:                                                         \
-          goto yyerrlab;                                                \
-        }                                                               \
-    }                                                                   \
-} while (0)
-
-/* Discard any previous initial lookahead context because of Event,
-   which may be a lookahead change or an invalidation of the currently
-   established initial context for the current lookahead.
-
-   The most common example of a lookahead change is a shift.  An example
-   of both cases is syntax error recovery.  That is, a syntax error
-   occurs when the lookahead is syntactically erroneous for the
-   currently established initial context, so error recovery manipulates
-   the parser stacks to try to find a new initial context in which the
-   current lookahead is syntactically acceptable.  If it fails to find
-   such a context, it discards the lookahead.  */
-#if YYDEBUG
-# define YY_LAC_DISCARD(Event)                                           \
-do {                                                                     \
-  if (yy_lac_established)                                                \
-    {                                                                    \
-      YYDPRINTF ((stderr, "LAC: initial context discarded due to "       \
-                  Event "\n"));                                          \
-      yy_lac_established = 0;                                            \
-    }                                                                    \
-} while (0)
-#else
-# define YY_LAC_DISCARD(Event) yy_lac_established = 0
-#endif
-
-/* Given the stack whose top is *YYSSP, return 0 iff YYTOKEN can
-   eventually (after perhaps some reductions) be shifted, return 1 if
-   not, or return YYENOMEM if memory is exhausted.  As preconditions and
-   postconditions: *YYES_CAPACITY is the allocated size of the array to
-   which *YYES points, and either *YYES = YYESA or *YYES points to an
-   array allocated with YYSTACK_ALLOC.  yy_lac may overwrite the
-   contents of either array, alter *YYES and *YYES_CAPACITY, and free
-   any old *YYES other than YYESA.  */
-static int
-yy_lac (yy_state_t *yyesa, yy_state_t **yyes,
-        YYPTRDIFF_T *yyes_capacity, yy_state_t *yyssp, yysymbol_kind_t yytoken)
-{
-  yy_state_t *yyes_prev = yyssp;
-  yy_state_t *yyesp = yyes_prev;
-  /* Reduce until we encounter a shift and thereby accept the token.  */
-  YYDPRINTF ((stderr, "LAC: checking lookahead %s:", yysymbol_name (yytoken)));
-  if (yytoken == YYSYMBOL_YYUNDEF)
-    {
-      YYDPRINTF ((stderr, " Always Err\n"));
-      return 1;
-    }
-  while (1)
-    {
-      int yyrule = yypact[+*yyesp];
-      if (yypact_value_is_default (yyrule)
-          || (yyrule += yytoken) < 0 || YYLAST < yyrule
-          || yycheck[yyrule] != yytoken)
-        {
-          /* Use the default action.  */
-          yyrule = yydefact[+*yyesp];
-          if (yyrule == 0)
-            {
-              YYDPRINTF ((stderr, " Err\n"));
-              return 1;
-            }
-        }
-      else
-        {
-          /* Use the action from yytable.  */
-          yyrule = yytable[yyrule];
-          if (yytable_value_is_error (yyrule))
-            {
-              YYDPRINTF ((stderr, " Err\n"));
-              return 1;
-            }
-          if (0 < yyrule)
-            {
-              YYDPRINTF ((stderr, " S%d\n", yyrule));
-              return 0;
-            }
-          yyrule = -yyrule;
-        }
-      /* By now we know we have to simulate a reduce.  */
-      YYDPRINTF ((stderr, " R%d", yyrule - 1));
-      {
-        /* Pop the corresponding number of values from the stack.  */
-        YYPTRDIFF_T yylen = yyr2[yyrule];
-        /* First pop from the LAC stack as many tokens as possible.  */
-        if (yyesp != yyes_prev)
-          {
-            YYPTRDIFF_T yysize = yyesp - *yyes + 1;
-            if (yylen < yysize)
-              {
-                yyesp -= yylen;
-                yylen = 0;
-              }
-            else
-              {
-                yyesp = yyes_prev;
-                yylen -= yysize;
-              }
-          }
-        /* Only afterwards look at the main stack.  */
-        if (yylen)
-          yyesp = yyes_prev -= yylen;
-      }
-      /* Push the resulting state of the reduction.  */
-      {
-        yy_state_fast_t yystate;
-        {
-          const int yylhs = yyr1[yyrule] - YYNTOKENS;
-          const int yyi = yypgoto[yylhs] + *yyesp;
-          yystate = (0 <= yyi && yyi <= YYLAST && yycheck[yyi] == *yyesp
-                     ? yytable[yyi]
-                     : yydefgoto[yylhs]);
-        }
-        if (yyesp == yyes_prev)
-          {
-            yyesp = *yyes;
-            YY_IGNORE_USELESS_CAST_BEGIN
-            *yyesp = YY_CAST (yy_state_t, yystate);
-            YY_IGNORE_USELESS_CAST_END
-          }
-        else
-          {
-            if (yy_lac_stack_realloc (yyes_capacity, 1,
-#if YYDEBUG
-                                      " (", ")",
-#endif
-                                      yyes, yyesa, &yyesp, yyes_prev))
-              {
-                YYDPRINTF ((stderr, "\n"));
-                return YYENOMEM;
-              }
-            YY_IGNORE_USELESS_CAST_BEGIN
-            *++yyesp = YY_CAST (yy_state_t, yystate);
-            YY_IGNORE_USELESS_CAST_END
-          }
-        YYDPRINTF ((stderr, " G%d", yystate));
-      }
-    }
-}
-
-/* Context of a parse error.  */
-typedef struct
-{
-  yy_state_t *yyssp;
-  yy_state_t *yyesa;
-  yy_state_t **yyes;
-  YYPTRDIFF_T *yyes_capacity;
-  yysymbol_kind_t yytoken;
-  YYLTYPE *yylloc;
-} yypcontext_t;
-
-/* Put in YYARG at most YYARGN of the expected tokens given the
-   current YYCTX, and return the number of tokens stored in YYARG.  If
-   YYARG is null, return the number of expected tokens (guaranteed to
-   be less than YYNTOKENS).  Return YYENOMEM on memory exhaustion.
-   Return 0 if there are more than YYARGN expected tokens, yet fill
-   YYARG up to YYARGN. */
-static int
-yypcontext_expected_tokens (const yypcontext_t *yyctx,
-                            yysymbol_kind_t yyarg[], int yyargn)
-{
-  /* Actual size of YYARG. */
-  int yycount = 0;
-
-  int yyx;
-  for (yyx = 0; yyx < YYNTOKENS; ++yyx)
-    {
-      yysymbol_kind_t yysym = YY_CAST (yysymbol_kind_t, yyx);
-      if (yysym != YYSYMBOL_YYerror && yysym != YYSYMBOL_YYUNDEF)
-        switch (yy_lac (yyctx->yyesa, yyctx->yyes, yyctx->yyes_capacity, yyctx->yyssp, yysym))
-          {
-          case YYENOMEM:
-            return YYENOMEM;
-          case 1:
-            continue;
-          default:
-            if (!yyarg)
-              ++yycount;
-            else if (yycount == yyargn)
-              return 0;
-            else
-              yyarg[yycount++] = yysym;
-          }
-    }
-  if (yyarg && yycount == 0 && 0 < yyargn)
-    yyarg[0] = YYSYMBOL_YYEMPTY;
-  return yycount;
-}
 
 
-
-
-#ifndef yystrlen
-# if defined __GLIBC__ && defined _STRING_H
-#  define yystrlen(S) (YY_CAST (YYPTRDIFF_T, strlen (S)))
-# else
-/* Return the length of YYSTR.  */
-static YYPTRDIFF_T
-yystrlen (const char *yystr)
-{
-  YYPTRDIFF_T yylen;
-  for (yylen = 0; yystr[yylen]; yylen++)
-    continue;
-  return yylen;
-}
-# endif
-#endif
-
-#ifndef yystpcpy
-# if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
-#  define yystpcpy stpcpy
-# else
-/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
-   YYDEST.  */
-static char *
-yystpcpy (char *yydest, const char *yysrc)
-{
-  char *yyd = yydest;
-  const char *yys = yysrc;
-
-  while ((*yyd++ = *yys++) != '\0')
-    continue;
-
-  return yyd - 1;
-}
-# endif
-#endif
-
-
-
-static int
-yy_syntax_error_arguments (const yypcontext_t *yyctx,
-                           yysymbol_kind_t yyarg[], int yyargn)
-{
-  /* Actual size of YYARG. */
-  int yycount = 0;
-  /* There are many possibilities here to consider:
-     - If this state is a consistent state with a default action, then
-       the only way this function was invoked is if the default action
-       is an error action.  In that case, don't check for expected
-       tokens because there are none.
-     - The only way there can be no lookahead present (in yychar) is if
-       this state is a consistent state with a default action.  Thus,
-       detecting the absence of a lookahead is sufficient to determine
-       that there is no unexpected or expected token to report.  In that
-       case, just report a simple "syntax error".
-     - Don't assume there isn't a lookahead just because this state is a
-       consistent state with a default action.  There might have been a
-       previous inconsistent state, consistent state with a non-default
-       action, or user semantic action that manipulated yychar.
-       In the first two cases, it might appear that the current syntax
-       error should have been detected in the previous state when yy_lac
-       was invoked.  However, at that time, there might have been a
-       different syntax error that discarded a different initial context
-       during error recovery, leaving behind the current lookahead.
-  */
-  if (yyctx->yytoken != YYSYMBOL_YYEMPTY)
-    {
-      int yyn;
-      YYDPRINTF ((stderr, "Constructing syntax error message\n"));
-      if (yyarg)
-        yyarg[yycount] = yyctx->yytoken;
-      ++yycount;
-      yyn = yypcontext_expected_tokens (yyctx,
-                                        yyarg ? yyarg + 1 : yyarg, yyargn - 1);
-      if (yyn == YYENOMEM)
-        return YYENOMEM;
-      else if (yyn == 0)
-        YYDPRINTF ((stderr, "No expected tokens.\n"));
-      else
-        yycount += yyn;
-    }
-  return yycount;
-}
-
-/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
-   about the unexpected token YYTOKEN for the state stack whose top is
-   YYSSP.  In order to see if a particular token T is a
-   valid looakhead, invoke yy_lac (YYESA, YYES, YYES_CAPACITY, YYSSP, T).
-
-   Return 0 if *YYMSG was successfully written.  Return -1 if *YYMSG is
-   not large enough to hold the message.  In that case, also set
-   *YYMSG_ALLOC to the required number of bytes.  Return YYENOMEM if the
-   required number of bytes is too large to store or if
-   yy_lac returned YYENOMEM.  */
-static int
-yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
-                const yypcontext_t *yyctx)
-{
-  enum { YYARGS_MAX = 5 };
-  /* Internationalized format string. */
-  const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat: reported tokens (one for the "unexpected",
-     one per "expected"). */
-  yysymbol_kind_t yyarg[YYARGS_MAX];
-  /* Cumulated lengths of YYARG.  */
-  YYPTRDIFF_T yysize = 0;
-
-  /* Actual size of YYARG. */
-  int yycount = yy_syntax_error_arguments (yyctx, yyarg, YYARGS_MAX);
-  if (yycount == YYENOMEM)
-    return YYENOMEM;
-
-  switch (yycount)
-    {
-#define YYCASE_(N, S)                       \
-      case N:                               \
-        yyformat = S;                       \
-        break
-    default: /* Avoid compiler warnings. */
-      YYCASE_(0, YY_("syntax error"));
-      YYCASE_(1, YY_("syntax error, unexpected %s"));
-      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
-      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
-#undef YYCASE_
-    }
-
-  /* Compute error message size.  Don't count the "%s"s, but reserve
-     room for the terminator.  */
-  yysize = yystrlen (yyformat) - 2 * yycount + 1;
-  {
-    int yyi;
-    for (yyi = 0; yyi < yycount; ++yyi)
-      {
-        YYPTRDIFF_T yysize1
-          = yysize + yystrlen (yysymbol_name (yyarg[yyi]));
-        if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
-          yysize = yysize1;
-        else
-          return YYENOMEM;
-      }
-  }
-
-  if (*yymsg_alloc < yysize)
-    {
-      *yymsg_alloc = 2 * yysize;
-      if (! (yysize <= *yymsg_alloc
-             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
-        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
-      return -1;
-    }
-
-  /* Avoid sprintf, as that infringes on the user's name space.
-     Don't have undefined behavior even if the translation
-     produced a string with the wrong number of "%s"s.  */
-  {
-    char *yyp = *yymsg;
-    int yyi = 0;
-    while ((*yyp = *yyformat) != '\0')
-      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
-        {
-          yyp = yystpcpy (yyp, yysymbol_name (yyarg[yyi++]));
-          yyformat += 2;
-        }
-      else
-        {
-          ++yyp;
-          ++yyformat;
-        }
-  }
-  return 0;
-}
 
 
 /*-----------------------------------------------.
@@ -1610,12 +1162,6 @@ yyparse (void)
     YYLTYPE *yyls = yylsa;
     YYLTYPE *yylsp = yyls;
 
-    yy_state_t yyesa[20];
-    yy_state_t *yyes = yyesa;
-    YYPTRDIFF_T yyes_capacity = 20 < YYMAXDEPTH ? 20 : YYMAXDEPTH;
-
-  /* Whether LAC context is established.  A Boolean.  */
-  int yy_lac_established = 0;
   int yyn;
   /* The return value of yyparse.  */
   int yyresult;
@@ -1629,10 +1175,7 @@ yyparse (void)
   /* The locations where the error started and ended.  */
   YYLTYPE yyerror_range[3];
 
-  /* Buffer for error messages, and its allocated size.  */
-  char yymsgbuf[128];
-  char *yymsg = yymsgbuf;
-  YYPTRDIFF_T yymsg_alloc = sizeof yymsgbuf;
+
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N), yylsp -= (N))
 
@@ -1791,17 +1334,13 @@ yybackup:
      detect an error, take that action.  */
   yyn += yytoken;
   if (yyn < 0 || YYLAST < yyn || yycheck[yyn] != yytoken)
-    {
-      YY_LAC_ESTABLISH;
-      goto yydefault;
-    }
+    goto yydefault;
   yyn = yytable[yyn];
   if (yyn <= 0)
     {
       if (yytable_value_is_error (yyn))
         goto yyerrlab;
       yyn = -yyn;
-      YY_LAC_ESTABLISH;
       goto yyreduce;
     }
 
@@ -1820,7 +1359,6 @@ yybackup:
 
   /* Discard the shifted token.  */
   yychar = YYEMPTY;
-  YY_LAC_DISCARD ("shift");
   goto yynewstate;
 
 
@@ -1855,12 +1393,10 @@ yyreduce:
   YYLLOC_DEFAULT (yyloc, (yylsp - yylen), yylen);
   yyerror_range[1] = yyloc;
   YY_REDUCE_PRINT (yyn);
-  {
-    int yychar_backup = yychar;
-    switch (yyn)
-      {
+  switch (yyn)
+    {
   case 2: /* Program: ExtDefList  */
-#line 132 "./parser.y"
+#line 129 "./parser.y"
 {
     // 创建Program节点，行号为外部定义列表的起始行
     (yyval.node) = create_ast_node("Program", (yyloc).first_line);
@@ -1869,82 +1405,85 @@ yyreduce:
     // 设置AST根节点
     ast_root = (yyval.node);
 }
-#line 1873 "./syntax.tab.c"
+#line 1409 "./syntax.tab.c"
     break;
 
   case 3: /* ExtDefList: ExtDef ExtDefList  */
-#line 143 "./parser.y"
+#line 140 "./parser.y"
 {
     (yyval.node) = create_ast_node("ExtDefList", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));  // 子节点：当前ExtDef + 剩余ExtDefList
 }
-#line 1882 "./syntax.tab.c"
+#line 1418 "./syntax.tab.c"
     break;
 
   case 4: /* ExtDefList: %empty  */
-#line 148 "./parser.y"
+#line 145 "./parser.y"
 {
     (yyval.node) = NULL;  // 空列表无需创建节点
     emptystart = yylineno;  // 记录空列表的起始行号
 }
-#line 1891 "./syntax.tab.c"
+#line 1427 "./syntax.tab.c"
     break;
 
   case 5: /* ExtDef: Specifier ExtDecList SEMI  */
-#line 155 "./parser.y"
+#line 152 "./parser.y"
 {
     // 形式1：类型说明符 + 外部声明列表 + 分号（如int a, b[10];）
     (yyval.node) = create_ast_node("ExtDef", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 1901 "./syntax.tab.c"
+#line 1437 "./syntax.tab.c"
     break;
 
   case 6: /* ExtDef: Specifier SEMI  */
-#line 161 "./parser.y"
+#line 158 "./parser.y"
 {
     // 形式2：类型说明符 + 分号（如struct S;  forward声明）
     (yyval.node) = create_ast_node("ExtDef", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 1911 "./syntax.tab.c"
+#line 1447 "./syntax.tab.c"
     break;
 
   case 7: /* ExtDef: Specifier FunDec CompSt  */
-#line 167 "./parser.y"
+#line 164 "./parser.y"
 {
     // 形式3：类型说明符 + 函数声明 + 复合语句（如int add(int a) { return a; }）
     (yyval.node) = create_ast_node("ExtDef", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 1921 "./syntax.tab.c"
+#line 1457 "./syntax.tab.c"
     break;
 
   case 8: /* ExtDef: error SEMI  */
-#line 173 "./parser.y"
+#line 170 "./parser.y"
 {
     // 错误处理1：任意错误 + 分号（如int a b;）
     syntaxError++;  // 错误计数+1
+    yyerrok;
 }
-#line 1930 "./syntax.tab.c"
+#line 1467 "./syntax.tab.c"
     break;
 
   case 9: /* ExtDef: Specifier error SEMI  */
-#line 178 "./parser.y"
+#line 176 "./parser.y"
 {
     // 错误处理2：类型说明符 + 错误 + 分号（如int ;）
     syntaxError++;
+    yyerrok;
 }
-#line 1939 "./syntax.tab.c"
+#line 1477 "./syntax.tab.c"
     break;
 
   case 10: /* ExtDef: error Specifier SEMI  */
-#line 183 "./parser.y"
+#line 182 "./parser.y"
 {
     // 错误处理3：错误 + 类型说明符 + 分号（如a int;）
     syntaxError++;
+    yyerrok;
 }
-#line 1948 "./syntax.tab.c"
+#line 1487 "./syntax.tab.c"
     break;
 
   case 11: /* ExtDecList: VarDec  */
@@ -1954,7 +1493,7 @@ yyreduce:
     (yyval.node) = create_ast_node("ExtDecList", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 1958 "./syntax.tab.c"
+#line 1497 "./syntax.tab.c"
     break;
 
   case 12: /* ExtDecList: VarDec COMMA ExtDecList  */
@@ -1964,713 +1503,702 @@ yyreduce:
     (yyval.node) = create_ast_node("ExtDecList", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 1968 "./syntax.tab.c"
+#line 1507 "./syntax.tab.c"
     break;
 
-  case 13: /* ExtDecList: VarDec error ExtDefList  */
-#line 202 "./parser.y"
-{
-    // 错误处理：变量声明 + 错误 + 外部定义列表（如a b int c;）
-    syntaxError++;
-}
-#line 1977 "./syntax.tab.c"
-    break;
-
-  case 14: /* Specifier: TYPE  */
-#line 211 "./parser.y"
+  case 13: /* Specifier: TYPE  */
+#line 207 "./parser.y"
 {
     // 基础类型（如int、float）
     (yyval.node) = create_ast_node("Specifier", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 1987 "./syntax.tab.c"
+#line 1517 "./syntax.tab.c"
     break;
 
-  case 15: /* Specifier: StructSpecifier  */
-#line 217 "./parser.y"
+  case 14: /* Specifier: StructSpecifier  */
+#line 213 "./parser.y"
 {
     // 结构体类型（如struct S { int x; }）
     (yyval.node) = create_ast_node("Specifier", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 1997 "./syntax.tab.c"
+#line 1527 "./syntax.tab.c"
     break;
 
-  case 16: /* StructSpecifier: STRUCT OptTag LC DefList RC  */
-#line 225 "./parser.y"
+  case 15: /* StructSpecifier: STRUCT OptTag LC DefList RC  */
+#line 221 "./parser.y"
 {
     // 形式1：struct + 可选标签 + { 定义列表 }（如struct S { int x; }）
     (yyval.node) = create_ast_node("StructSpecifier", (yyloc).first_line);
     add_child_nodes((yyval.node), 5, (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2007 "./syntax.tab.c"
+#line 1537 "./syntax.tab.c"
     break;
 
-  case 17: /* StructSpecifier: STRUCT Tag  */
-#line 231 "./parser.y"
+  case 16: /* StructSpecifier: STRUCT Tag  */
+#line 227 "./parser.y"
 {
     // 形式2：struct + 标签（引用已定义的结构体，如struct S）
     (yyval.node) = create_ast_node("StructSpecifier", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2017 "./syntax.tab.c"
+#line 1547 "./syntax.tab.c"
     break;
 
-  case 18: /* OptTag: ID  */
-#line 239 "./parser.y"
+  case 17: /* OptTag: ID  */
+#line 235 "./parser.y"
 {
     // 有标签（如struct S中的S）
     (yyval.node) = create_ast_node("OptTag", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2027 "./syntax.tab.c"
+#line 1557 "./syntax.tab.c"
     break;
 
-  case 19: /* OptTag: %empty  */
-#line 245 "./parser.y"
+  case 18: /* OptTag: %empty  */
+#line 241 "./parser.y"
 {
     (yyval.node) = NULL;  // 空标签无需创建节点
 }
-#line 2035 "./syntax.tab.c"
+#line 1565 "./syntax.tab.c"
     break;
 
-  case 20: /* Tag: ID  */
-#line 251 "./parser.y"
+  case 19: /* Tag: ID  */
+#line 247 "./parser.y"
 {
     (yyval.node) = create_ast_node("Tag", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2044 "./syntax.tab.c"
+#line 1574 "./syntax.tab.c"
     break;
 
-  case 21: /* VarDec: ID  */
-#line 260 "./parser.y"
+  case 20: /* VarDec: ID  */
+#line 256 "./parser.y"
 {
     // 普通变量（如a）
     (yyval.node) = create_ast_node("VarDec", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2054 "./syntax.tab.c"
+#line 1584 "./syntax.tab.c"
     break;
 
-  case 22: /* VarDec: VarDec LB INT RB  */
-#line 266 "./parser.y"
+  case 21: /* VarDec: VarDec LB INT RB  */
+#line 262 "./parser.y"
 {
     // 数组变量（如a[10]、b[2][3]）
     (yyval.node) = create_ast_node("VarDec", (yyloc).first_line);
     add_child_nodes((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2064 "./syntax.tab.c"
+#line 1594 "./syntax.tab.c"
     break;
 
-  case 23: /* VarDec: VarDec LB error RB  */
-#line 272 "./parser.y"
+  case 22: /* VarDec: VarDec LB error RB  */
+#line 268 "./parser.y"
 {
     // 错误处理：数组下标错误（如a[b]中的b不是常量）
     syntaxError++;
 }
-#line 2073 "./syntax.tab.c"
+#line 1603 "./syntax.tab.c"
     break;
 
-  case 24: /* FunDec: ID LP VarList RP  */
-#line 279 "./parser.y"
+  case 23: /* FunDec: ID LP VarList RP  */
+#line 275 "./parser.y"
 {
     // 带参数的函数（如add(int a, int b)）
     (yyval.node) = create_ast_node("FunDec", (yyloc).first_line);
     add_child_nodes((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2083 "./syntax.tab.c"
+#line 1613 "./syntax.tab.c"
     break;
 
-  case 25: /* FunDec: ID LP RP  */
-#line 285 "./parser.y"
+  case 24: /* FunDec: ID LP RP  */
+#line 281 "./parser.y"
 {
     // 无参数的函数（如foo()）
     (yyval.node) = create_ast_node("FunDec", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2093 "./syntax.tab.c"
+#line 1623 "./syntax.tab.c"
     break;
 
-  case 26: /* FunDec: ID LP error RP  */
-#line 291 "./parser.y"
+  case 25: /* FunDec: ID LP error RP  */
+#line 287 "./parser.y"
 {
     // 错误处理：参数列表错误（如add(int a b)）
     syntaxError++;
 }
-#line 2102 "./syntax.tab.c"
+#line 1632 "./syntax.tab.c"
     break;
 
-  case 27: /* FunDec: error LP VarList RP  */
-#line 296 "./parser.y"
+  case 26: /* FunDec: error LP VarList RP  */
+#line 292 "./parser.y"
 {
     // 错误处理：函数名错误（如123(int a)）
     syntaxError++;
 }
-#line 2111 "./syntax.tab.c"
+#line 1641 "./syntax.tab.c"
     break;
 
-  case 28: /* VarList: ParamDec COMMA VarList  */
-#line 303 "./parser.y"
+  case 27: /* VarList: ParamDec COMMA VarList  */
+#line 299 "./parser.y"
 {
     // 多个参数（如int a, float b）
     (yyval.node) = create_ast_node("VarList", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2121 "./syntax.tab.c"
+#line 1651 "./syntax.tab.c"
     break;
 
-  case 29: /* VarList: ParamDec  */
-#line 309 "./parser.y"
+  case 28: /* VarList: ParamDec  */
+#line 305 "./parser.y"
 {
     // 单个参数（如int a）
     (yyval.node) = create_ast_node("VarList", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2131 "./syntax.tab.c"
+#line 1661 "./syntax.tab.c"
     break;
 
-  case 30: /* ParamDec: Specifier VarDec  */
-#line 317 "./parser.y"
+  case 29: /* ParamDec: Specifier VarDec  */
+#line 313 "./parser.y"
 {
     (yyval.node) = create_ast_node("ParamDec", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2140 "./syntax.tab.c"
+#line 1670 "./syntax.tab.c"
     break;
 
-  case 31: /* CompSt: LC DefList StmtList RC  */
-#line 326 "./parser.y"
+  case 30: /* CompSt: LC DefList StmtList RC  */
+#line 322 "./parser.y"
 {
     (yyval.node) = create_ast_node("CompSt", (yyloc).first_line);
     add_child_nodes((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2149 "./syntax.tab.c"
+#line 1679 "./syntax.tab.c"
     break;
 
-  case 32: /* StmtList: Stmt StmtList  */
-#line 333 "./parser.y"
+  case 31: /* StmtList: Stmt StmtList  */
+#line 329 "./parser.y"
 {
     // 多个语句（如a=1; return a;）
     (yyval.node) = create_ast_node("StmtList", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2159 "./syntax.tab.c"
+#line 1689 "./syntax.tab.c"
     break;
 
-  case 33: /* StmtList: %empty  */
-#line 339 "./parser.y"
+  case 32: /* StmtList: %empty  */
+#line 335 "./parser.y"
 {
     (yyval.node) = NULL;  // 空语句列表无需创建节点
 }
-#line 2167 "./syntax.tab.c"
+#line 1697 "./syntax.tab.c"
     break;
 
-  case 34: /* Stmt: Exp SEMI  */
-#line 346 "./parser.y"
+  case 33: /* Stmt: Exp SEMI  */
+#line 342 "./parser.y"
 {
     // 1. 表达式语句（如a = 1 + 2;、foo(3);）
+    // 关键：用SEMI的行号作为Stmt的行号
     (yyval.node) = create_ast_node("Stmt", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2177 "./syntax.tab.c"
+#line 1708 "./syntax.tab.c"
     break;
 
-  case 35: /* Stmt: CompSt  */
-#line 352 "./parser.y"
+  case 34: /* Stmt: CompSt  */
+#line 349 "./parser.y"
 {
     // 2. 复合语句（嵌套的{...}块，如if/while的循环体）
     (yyval.node) = create_ast_node("Stmt", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2187 "./syntax.tab.c"
+#line 1718 "./syntax.tab.c"
     break;
 
-  case 36: /* Stmt: RETURN Exp SEMI  */
-#line 358 "./parser.y"
+  case 35: /* Stmt: RETURN Exp SEMI  */
+#line 355 "./parser.y"
 {
     // 3. 返回语句（如return a;、return 0;）
     (yyval.node) = create_ast_node("Stmt", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2197 "./syntax.tab.c"
+#line 1728 "./syntax.tab.c"
     break;
 
-  case 37: /* Stmt: IF LP Exp RP Stmt  */
-#line 364 "./parser.y"
+  case 36: /* Stmt: IF LP Exp RP Stmt  */
+#line 361 "./parser.y"
 {
     // 4. 无else的if语句（如if(a > 0) { ... }）
     // %prec LOWER_THAN_ELSE：强制if优先级低于else，避免else匹配歧义
     (yyval.node) = create_ast_node("Stmt", (yyloc).first_line);
     add_child_nodes((yyval.node), 5, (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2208 "./syntax.tab.c"
+#line 1739 "./syntax.tab.c"
     break;
 
-  case 38: /* Stmt: IF LP Exp RP Stmt ELSE Stmt  */
-#line 371 "./parser.y"
+  case 37: /* Stmt: IF LP Exp RP Stmt ELSE Stmt  */
+#line 368 "./parser.y"
 {
     // 5. 带else的if语句（如if(a > 0) { ... } else { ... }）
     (yyval.node) = create_ast_node("Stmt", (yyloc).first_line);
     add_child_nodes((yyval.node), 7, (yyvsp[-6].node), (yyvsp[-5].node), (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2218 "./syntax.tab.c"
+#line 1749 "./syntax.tab.c"
     break;
 
-  case 39: /* Stmt: WHILE LP Exp RP Stmt  */
-#line 377 "./parser.y"
+  case 38: /* Stmt: WHILE LP Exp RP Stmt  */
+#line 374 "./parser.y"
 {
     // 6. while循环语句（如while(a > 0) { ... }）
     (yyval.node) = create_ast_node("Stmt", (yyloc).first_line);
     add_child_nodes((yyval.node), 5, (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2228 "./syntax.tab.c"
+#line 1759 "./syntax.tab.c"
     break;
 
-  case 40: /* Stmt: error SEMI  */
-#line 383 "./parser.y"
+  case 39: /* Stmt: error SEMI  */
+#line 380 "./parser.y"
 {
     // 错误处理1：任意错误+分号（如a b;、123;）
     syntaxError++;
 }
-#line 2237 "./syntax.tab.c"
+#line 1768 "./syntax.tab.c"
     break;
 
-  case 41: /* Stmt: Exp error SEMI  */
-#line 388 "./parser.y"
+  case 40: /* Stmt: Exp error SEMI  */
+#line 385 "./parser.y"
 {
     // 错误处理2：表达式不完整（如a + ;、a = ;）
     syntaxError++;
 }
-#line 2246 "./syntax.tab.c"
+#line 1777 "./syntax.tab.c"
     break;
 
-  case 42: /* Stmt: RETURN Exp error  */
-#line 393 "./parser.y"
+  case 41: /* Stmt: RETURN Exp error  */
+#line 390 "./parser.y"
 {
     // 错误处理3：return语句缺少分号（如return a）
     syntaxError++;
 }
-#line 2255 "./syntax.tab.c"
+#line 1786 "./syntax.tab.c"
     break;
 
-  case 43: /* Stmt: RETURN error SEMI  */
-#line 398 "./parser.y"
+  case 42: /* Stmt: RETURN error SEMI  */
+#line 395 "./parser.y"
 {
     // 错误处理4：return后无表达式（如return ;）
     syntaxError++;
 }
-#line 2264 "./syntax.tab.c"
+#line 1795 "./syntax.tab.c"
     break;
 
-  case 44: /* DefList: Def DefList  */
-#line 407 "./parser.y"
+  case 43: /* DefList: Def DefList  */
+#line 404 "./parser.y"
 {
     (yyval.node) = create_ast_node("DefList", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2273 "./syntax.tab.c"
+#line 1804 "./syntax.tab.c"
     break;
 
-  case 45: /* DefList: %empty  */
-#line 412 "./parser.y"
+  case 44: /* DefList: %empty  */
+#line 409 "./parser.y"
 {
     (yyval.node) = NULL;
 }
-#line 2281 "./syntax.tab.c"
+#line 1812 "./syntax.tab.c"
     break;
 
-  case 46: /* Def: Specifier DecList SEMI  */
-#line 418 "./parser.y"
+  case 45: /* Def: Specifier DecList SEMI  */
+#line 415 "./parser.y"
 {
     (yyval.node) = create_ast_node("Def", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2290 "./syntax.tab.c"
+#line 1821 "./syntax.tab.c"
     break;
 
-  case 47: /* Def: Specifier error SEMI  */
-#line 423 "./parser.y"
+  case 46: /* Def: Specifier error SEMI  */
+#line 420 "./parser.y"
 {
     // 错误处理1：类型后声明错误（如int ;、int a b;）
     syntaxError++;
 }
-#line 2299 "./syntax.tab.c"
+#line 1830 "./syntax.tab.c"
     break;
 
-  case 48: /* Def: Specifier DecList error  */
-#line 428 "./parser.y"
+  case 47: /* Def: Specifier DecList error  */
+#line 425 "./parser.y"
 {
     // 错误处理2：定义缺少分号（如int a = 1）
     syntaxError++;
 }
-#line 2308 "./syntax.tab.c"
+#line 1839 "./syntax.tab.c"
     break;
 
-  case 49: /* DecList: Dec  */
-#line 435 "./parser.y"
+  case 48: /* DecList: Dec  */
+#line 432 "./parser.y"
 {
     (yyval.node) = create_ast_node("DecList", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2317 "./syntax.tab.c"
+#line 1848 "./syntax.tab.c"
     break;
 
-  case 50: /* DecList: Dec COMMA DecList  */
-#line 440 "./parser.y"
+  case 49: /* DecList: Dec COMMA DecList  */
+#line 437 "./parser.y"
 {
     // 多个声明（如a = 1, b[5] = {0}, c）
     (yyval.node) = create_ast_node("DecList", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2327 "./syntax.tab.c"
+#line 1858 "./syntax.tab.c"
     break;
 
-  case 51: /* Dec: VarDec  */
-#line 448 "./parser.y"
+  case 50: /* Dec: VarDec  */
+#line 445 "./parser.y"
 {
     // 无初始化的声明（如int a;、float b[10];）
     (yyval.node) = create_ast_node("Dec", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2337 "./syntax.tab.c"
+#line 1868 "./syntax.tab.c"
     break;
 
-  case 52: /* Dec: VarDec ASSIGNOP Exp  */
-#line 454 "./parser.y"
+  case 51: /* Dec: VarDec ASSIGNOP Exp  */
+#line 451 "./parser.y"
 {
     // 带初始化的声明（如int a = 1 + 2;、float b = 3.14;）
     (yyval.node) = create_ast_node("Dec", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2347 "./syntax.tab.c"
+#line 1878 "./syntax.tab.c"
     break;
 
-  case 53: /* Exp: Exp ASSIGNOP Exp  */
-#line 464 "./parser.y"
+  case 52: /* Exp: Exp ASSIGNOP Exp  */
+#line 461 "./parser.y"
 {
     // 1. 赋值表达式（如a = b、a = b = c）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2357 "./syntax.tab.c"
+#line 1888 "./syntax.tab.c"
     break;
 
-  case 54: /* Exp: Exp AND Exp  */
-#line 470 "./parser.y"
+  case 53: /* Exp: Exp AND Exp  */
+#line 467 "./parser.y"
 {
     // 2. 逻辑与表达式（如a > 0 && b < 10）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2367 "./syntax.tab.c"
+#line 1898 "./syntax.tab.c"
     break;
 
-  case 55: /* Exp: Exp OR Exp  */
-#line 476 "./parser.y"
+  case 54: /* Exp: Exp OR Exp  */
+#line 473 "./parser.y"
 {
     // 3. 逻辑或表达式（如a == 0 || b == 1）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2377 "./syntax.tab.c"
+#line 1908 "./syntax.tab.c"
     break;
 
-  case 56: /* Exp: Exp RELOP Exp  */
-#line 482 "./parser.y"
+  case 55: /* Exp: Exp RELOP Exp  */
+#line 479 "./parser.y"
 {
     // 4. 关系表达式（如a > 5、b <= 3、c == 0）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2387 "./syntax.tab.c"
+#line 1918 "./syntax.tab.c"
     break;
 
-  case 57: /* Exp: Exp PLUS Exp  */
-#line 488 "./parser.y"
+  case 56: /* Exp: Exp PLUS Exp  */
+#line 485 "./parser.y"
 {
     // 5. 加法表达式（如a + 3、b + c）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2397 "./syntax.tab.c"
+#line 1928 "./syntax.tab.c"
     break;
 
-  case 58: /* Exp: Exp MINUS Exp  */
-#line 494 "./parser.y"
+  case 57: /* Exp: Exp MINUS Exp  */
+#line 491 "./parser.y"
 {
     // 6. 减法表达式（如a - 5、b - c）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2407 "./syntax.tab.c"
+#line 1938 "./syntax.tab.c"
     break;
 
-  case 59: /* Exp: Exp STAR Exp  */
-#line 500 "./parser.y"
+  case 58: /* Exp: Exp STAR Exp  */
+#line 497 "./parser.y"
 {
     // 7. 乘法表达式（如a * 4、b * c）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2417 "./syntax.tab.c"
+#line 1948 "./syntax.tab.c"
     break;
 
-  case 60: /* Exp: Exp DIV Exp  */
-#line 506 "./parser.y"
+  case 59: /* Exp: Exp DIV Exp  */
+#line 503 "./parser.y"
 {
     // 8. 除法表达式（如a / 2、b / c）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2427 "./syntax.tab.c"
+#line 1958 "./syntax.tab.c"
     break;
 
-  case 61: /* Exp: LP Exp RP  */
-#line 512 "./parser.y"
+  case 60: /* Exp: LP Exp RP  */
+#line 509 "./parser.y"
 {
     // 9. 括号表达式（强制改变优先级，如(a + b) * c）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2437 "./syntax.tab.c"
+#line 1968 "./syntax.tab.c"
     break;
 
-  case 62: /* Exp: MINUS Exp  */
-#line 518 "./parser.y"
+  case 61: /* Exp: MINUS Exp  */
+#line 515 "./parser.y"
 {
     // 10. 负号表达式（如-3、-a，%prec UMINUS指定为单目运算符）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2447 "./syntax.tab.c"
+#line 1978 "./syntax.tab.c"
     break;
 
-  case 63: /* Exp: NOT Exp  */
-#line 524 "./parser.y"
+  case 62: /* Exp: NOT Exp  */
+#line 521 "./parser.y"
 {
     // 11. 逻辑非表达式（如!a、!(b > 0)）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2457 "./syntax.tab.c"
+#line 1988 "./syntax.tab.c"
     break;
 
-  case 64: /* Exp: ID LP Args RP  */
-#line 530 "./parser.y"
+  case 63: /* Exp: ID LP Args RP  */
+#line 527 "./parser.y"
 {
     // 12. 带参数的函数调用（如add(a, b)、foo(1 + 2)）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2467 "./syntax.tab.c"
+#line 1998 "./syntax.tab.c"
     break;
 
-  case 65: /* Exp: ID LP RP  */
-#line 536 "./parser.y"
+  case 64: /* Exp: ID LP RP  */
+#line 533 "./parser.y"
 {
     // 13. 无参数的函数调用（如foo()、init()）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2477 "./syntax.tab.c"
+#line 2008 "./syntax.tab.c"
     break;
 
-  case 66: /* Exp: Exp LB Exp RB  */
-#line 542 "./parser.y"
+  case 65: /* Exp: Exp LB Exp RB  */
+#line 539 "./parser.y"
 {
     // 14. 数组下标访问（如a[5]、b[i + 1]）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2487 "./syntax.tab.c"
+#line 2018 "./syntax.tab.c"
     break;
 
-  case 67: /* Exp: Exp DOT ID  */
-#line 548 "./parser.y"
+  case 66: /* Exp: Exp DOT ID  */
+#line 545 "./parser.y"
 {
     // 15. 结构体成员访问（如s.x、student.age）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2497 "./syntax.tab.c"
+#line 2028 "./syntax.tab.c"
     break;
 
-  case 68: /* Exp: ID  */
-#line 554 "./parser.y"
+  case 67: /* Exp: ID  */
+#line 551 "./parser.y"
 {
     // 16. 标识符表达式（变量名，如a、b）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2507 "./syntax.tab.c"
+#line 2038 "./syntax.tab.c"
     break;
 
-  case 69: /* Exp: INT  */
-#line 560 "./parser.y"
+  case 68: /* Exp: INT  */
+#line 557 "./parser.y"
 {
     // 17. 整型常量表达式（如123、0、-456）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2517 "./syntax.tab.c"
+#line 2048 "./syntax.tab.c"
     break;
 
-  case 70: /* Exp: FLOAT  */
-#line 566 "./parser.y"
+  case 69: /* Exp: FLOAT  */
+#line 563 "./parser.y"
 {
     // 18. 浮点型常量表达式（如3.14、0.5、-2.718）
     (yyval.node) = create_ast_node("Exp", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2527 "./syntax.tab.c"
+#line 2058 "./syntax.tab.c"
     break;
 
-  case 71: /* Exp: Exp ASSIGNOP error  */
-#line 573 "./parser.y"
+  case 70: /* Exp: Exp ASSIGNOP error  */
+#line 570 "./parser.y"
 {
     // 错误1：赋值表达式右侧不完整（如a = ）
     syntaxError++;
 }
-#line 2536 "./syntax.tab.c"
+#line 2067 "./syntax.tab.c"
     break;
 
-  case 72: /* Exp: Exp AND error  */
-#line 578 "./parser.y"
+  case 71: /* Exp: Exp AND error  */
+#line 575 "./parser.y"
 {
     // 错误2：逻辑与右侧不完整（如a && ）
     syntaxError++;
 }
-#line 2545 "./syntax.tab.c"
+#line 2076 "./syntax.tab.c"
     break;
 
-  case 73: /* Exp: Exp OR error  */
-#line 583 "./parser.y"
+  case 72: /* Exp: Exp OR error  */
+#line 580 "./parser.y"
 {
     // 错误3：逻辑或右侧不完整（如a || ）
     syntaxError++;
 }
-#line 2554 "./syntax.tab.c"
+#line 2085 "./syntax.tab.c"
     break;
 
-  case 74: /* Exp: Exp RELOP error  */
-#line 588 "./parser.y"
+  case 73: /* Exp: Exp RELOP error  */
+#line 585 "./parser.y"
 {
     // 错误4：关系表达式右侧不完整（如a > ）
     syntaxError++;
 }
-#line 2563 "./syntax.tab.c"
+#line 2094 "./syntax.tab.c"
     break;
 
-  case 75: /* Exp: Exp PLUS error  */
-#line 593 "./parser.y"
+  case 74: /* Exp: Exp PLUS error  */
+#line 590 "./parser.y"
 {
     // 错误5：加法表达式右侧不完整（如a + ）
     syntaxError++;
 }
-#line 2572 "./syntax.tab.c"
+#line 2103 "./syntax.tab.c"
     break;
 
-  case 76: /* Exp: Exp MINUS error  */
-#line 598 "./parser.y"
+  case 75: /* Exp: Exp MINUS error  */
+#line 595 "./parser.y"
 {
     // 错误6：减法表达式右侧不完整（如a - ）
     syntaxError++;
 }
-#line 2581 "./syntax.tab.c"
+#line 2112 "./syntax.tab.c"
     break;
 
-  case 77: /* Exp: Exp STAR error  */
-#line 603 "./parser.y"
+  case 76: /* Exp: Exp STAR error  */
+#line 600 "./parser.y"
 {
     // 错误7：乘法表达式右侧不完整（如a * ）
     syntaxError++;
 }
-#line 2590 "./syntax.tab.c"
+#line 2121 "./syntax.tab.c"
     break;
 
-  case 78: /* Exp: Exp DIV error  */
-#line 608 "./parser.y"
+  case 77: /* Exp: Exp DIV error  */
+#line 605 "./parser.y"
 {
     // 错误8：除法表达式右侧不完整（如a / ）
     syntaxError++;
 }
-#line 2599 "./syntax.tab.c"
+#line 2130 "./syntax.tab.c"
     break;
 
-  case 79: /* Exp: LP error RP  */
-#line 613 "./parser.y"
+  case 78: /* Exp: LP error RP  */
+#line 610 "./parser.y"
 {
     // 错误9：括号内表达式错误（如(a b)）
     syntaxError++;
 }
-#line 2608 "./syntax.tab.c"
+#line 2139 "./syntax.tab.c"
     break;
 
-  case 80: /* Exp: MINUS error  */
-#line 618 "./parser.y"
+  case 79: /* Exp: MINUS error  */
+#line 615 "./parser.y"
 {
     // 错误10：负号后无表达式（如- ）
     syntaxError++;
 }
-#line 2617 "./syntax.tab.c"
+#line 2148 "./syntax.tab.c"
     break;
 
-  case 81: /* Exp: NOT error  */
-#line 623 "./parser.y"
+  case 80: /* Exp: NOT error  */
+#line 620 "./parser.y"
 {
     // 错误11：逻辑非后无表达式（如! ）
     syntaxError++;
 }
-#line 2626 "./syntax.tab.c"
+#line 2157 "./syntax.tab.c"
     break;
 
-  case 82: /* Exp: ID LP error RP  */
-#line 628 "./parser.y"
+  case 81: /* Exp: ID LP error RP  */
+#line 625 "./parser.y"
 {
     // 错误12：函数参数列表错误（如foo(a b)）
     syntaxError++;
 }
-#line 2635 "./syntax.tab.c"
+#line 2166 "./syntax.tab.c"
     break;
 
-  case 83: /* Exp: Exp LB error RB  */
-#line 633 "./parser.y"
+  case 82: /* Exp: Exp LB error RB  */
+#line 630 "./parser.y"
 {
     // 错误13：数组下标错误（如a[ ]、a[b c]）
     syntaxError++;
 }
-#line 2644 "./syntax.tab.c"
+#line 2175 "./syntax.tab.c"
     break;
 
-  case 84: /* Args: Exp COMMA Args  */
-#line 640 "./parser.y"
+  case 83: /* Args: Exp COMMA Args  */
+#line 637 "./parser.y"
 {
     // 多个实参（如add(a + b, 3, c)）
     (yyval.node) = create_ast_node("Args", (yyloc).first_line);
     add_child_nodes((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
 }
-#line 2654 "./syntax.tab.c"
+#line 2185 "./syntax.tab.c"
     break;
 
-  case 85: /* Args: Exp  */
-#line 646 "./parser.y"
+  case 84: /* Args: Exp  */
+#line 643 "./parser.y"
 {
     // 单个实参（如foo(a)、bar(1 + 2)）
     (yyval.node) = create_ast_node("Args", (yyloc).first_line);
     add_child_nodes((yyval.node), 1, (yyvsp[0].node));
 }
-#line 2664 "./syntax.tab.c"
+#line 2195 "./syntax.tab.c"
     break;
 
 
-#line 2668 "./syntax.tab.c"
+#line 2199 "./syntax.tab.c"
 
-        default: break;
-      }
-    if (yychar_backup != yychar)
-      YY_LAC_DISCARD ("yychar change");
-  }
+      default: break;
+    }
   /* User semantic actions sometimes alter yychar, and that requires
      that yytoken be updated with the new translation.  We take the
      approach of translating immediately before every use of yytoken.
@@ -2715,39 +2243,7 @@ yyerrlab:
   if (!yyerrstatus)
     {
       ++yynerrs;
-      {
-        yypcontext_t yyctx
-          = {yyssp, yyesa, &yyes, &yyes_capacity, yytoken, &yylloc};
-        char const *yymsgp = YY_("syntax error");
-        int yysyntax_error_status;
-        if (yychar != YYEMPTY)
-          YY_LAC_ESTABLISH;
-        yysyntax_error_status = yysyntax_error (&yymsg_alloc, &yymsg, &yyctx);
-        if (yysyntax_error_status == 0)
-          yymsgp = yymsg;
-        else if (yysyntax_error_status == -1)
-          {
-            if (yymsg != yymsgbuf)
-              YYSTACK_FREE (yymsg);
-            yymsg = YY_CAST (char *,
-                             YYSTACK_ALLOC (YY_CAST (YYSIZE_T, yymsg_alloc)));
-            if (yymsg)
-              {
-                yysyntax_error_status
-                  = yysyntax_error (&yymsg_alloc, &yymsg, &yyctx);
-                yymsgp = yymsg;
-              }
-            else
-              {
-                yymsg = yymsgbuf;
-                yymsg_alloc = sizeof yymsgbuf;
-                yysyntax_error_status = YYENOMEM;
-              }
-          }
-        yyerror (yymsgp);
-        if (yysyntax_error_status == YYENOMEM)
-          YYNOMEM;
-      }
+      yyerror (YY_("syntax error"));
     }
 
   yyerror_range[1] = yylloc;
@@ -2827,10 +2323,6 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
-  /* If the stack popping above didn't lose the initial context for the
-     current lookahead token, the shift below will for sure.  */
-  YY_LAC_DISCARD ("error recovery");
-
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
@@ -2897,14 +2389,11 @@ yyreturnlab:
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-  if (yyes != yyesa)
-    YYSTACK_FREE (yyes);
-  if (yymsg != yymsgbuf)
-    YYSTACK_FREE (yymsg);
+
   return yyresult;
 }
 
-#line 652 "./parser.y"
+#line 649 "./parser.y"
 
 
 // -------------------------- 辅助函数实现 --------------------------
@@ -2943,37 +2432,3 @@ void add_child_nodes(ASTNode *parent, int arg_count, ...) {
     va_end(args);
 }
 
-// 4. 遍历并打印AST（递归实现，按缩进显示层级关系）
-void traverse_ast(const ASTNode *curr_node, int depth) {
-    if (curr_node == NULL) return;          /* 递归终止 */
-
-    /* 1. 打印缩进 */
-    for (int i = 0; i < depth; ++i) printf("  ");
-
-    /* 2. 打印节点名 */
-    printf("%s", curr_node->name);
-
-    /* 3. 打印附加信息（仅对叶子或特定 kind） */
-    switch (curr_node->kind) {
-        case ASTK_INT:
-            printf(": %lld", curr_node->ival);
-            break;
-        case ASTK_FLOAT:
-            printf(": %.6f", curr_node->fval);   /* 保留 6 位小数，与原代码一致 */
-            break;
-        case ASTK_ID:
-        case ASTK_TYPE:
-            printf(": %s", curr_node->sval);
-            break;
-        default:
-            /* 非终结符或其他情况，只打印行号（当 line > 0） */
-            if (curr_node->line > 0)
-                printf(" (Line %d)", curr_node->line);
-            break;
-    }
-    printf("\n");
-
-    /* 4. 递归访问子结点 */
-    for (int i = 0; i < curr_node->nchild; ++i)
-        traverse_ast(curr_node->child[i], depth + 1);
-}
