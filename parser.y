@@ -30,7 +30,6 @@ ASTNode* ast_root;
 // AST节点操作函数声明
 ASTNode *create_ast_node(const char *node_name, int line_num);
 void add_child_nodes(ASTNode *parent, int arg_count, ...);
-void traverse_ast(const ASTNode *curr_node, int depth);
 
 // 词法分析器入口函数（从lex.yy.c导入）
 extern int yylex(void);
@@ -171,16 +170,19 @@ ExtDef: Specifier ExtDecList SEMI
 {
     // 错误处理1：任意错误 + 分号（如int a b;）
     syntaxError++;  // 错误计数+1
+    yyerrok;
 }
 | Specifier error SEMI 
 {
     // 错误处理2：类型说明符 + 错误 + 分号（如int ;）
     syntaxError++;
+    yyerrok;
 }
 | error Specifier SEMI 
 {
     // 错误处理3：错误 + 类型说明符 + 分号（如a int;）
     syntaxError++;
+    yyerrok;
 };
 
 // 外部声明列表：单个变量声明（或多个声明用逗号分隔）
@@ -196,11 +198,7 @@ ExtDecList: VarDec
     $$ = create_ast_node("ExtDecList", @$.first_line);
     add_child_nodes($$, 3, $1, $2, $3);
 }
-| VarDec error ExtDefList 
-{
-    // 错误处理：变量声明 + 错误 + 外部定义列表（如a b int c;）
-    syntaxError++;
-};
+;
 
 
 // 2. 类型说明符（基础类型与结构体）
@@ -344,7 +342,7 @@ Stmt: Exp SEMI
 {
     // 1. 表达式语句（如a = 1 + 2;、foo(3);）
     // 关键：用SEMI的行号作为Stmt的行号
-    $$ = create_ast_node("Stmt", $1->line);
+    $$ = create_ast_node("Stmt", @$.first_line);
     add_child_nodes($$, 2, $1, $2);
 }
 | CompSt 
@@ -686,37 +684,3 @@ void add_child_nodes(ASTNode *parent, int arg_count, ...) {
     va_end(args);
 }
 
-// 4. 遍历并打印AST（递归实现，按缩进显示层级关系）
-void traverse_ast(const ASTNode *curr_node, int depth) {
-    if (curr_node == NULL) return;          /* 递归终止 */
-
-    /* 1. 打印缩进 */
-    for (int i = 0; i < depth; ++i) printf("  ");
-
-    /* 2. 打印节点名 */
-    printf("%s", curr_node->name);
-
-    /* 3. 打印附加信息（仅对叶子或特定 kind） */
-    switch (curr_node->kind) {
-        case ASTK_INT:
-            printf(": %lld", curr_node->ival);
-            break;
-        case ASTK_FLOAT:
-            printf(": %.6f", curr_node->fval);   /* 保留 6 位小数，与原代码一致 */
-            break;
-        case ASTK_ID:
-        case ASTK_TYPE:
-            printf(": %s", curr_node->sval);
-            break;
-        default:
-            /* 非终结符或其他情况，只打印行号（当 line > 0） */
-            if (curr_node->line > 0)
-                printf(" (Line %d)", curr_node->line);
-            break;
-    }
-    printf("\n");
-
-    /* 4. 递归访问子结点 */
-    for (int i = 0; i < curr_node->nchild; ++i)
-        traverse_ast(curr_node->child[i], depth + 1);
-}

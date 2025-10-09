@@ -381,26 +381,3 @@ void add_ast_node(ASTNode* node) {
         curr->next = new_node;
     }
 }
-
-void print_and_free_ast_nodes() {
-    ASTNodeList* current = ast_node_list;
-    while (current != NULL) {
-        ASTNodeList* next = current->next;
-        ast_print(current->node, 0);
-        ast_free(current->node);
-        free(current);
-        current = next;
-    }
-    ast_node_list = NULL;
-}
-
-void free_ast_nodes() {
-    ASTNodeList* current = ast_node_list;
-    while (current != NULL) {
-        ASTNodeList* next = current->next;
-        ast_free(current->node);
-        free(current);
-        current = next;
-    }
-    ast_node_list = NULL;
-}
