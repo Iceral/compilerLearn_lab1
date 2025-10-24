@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 
 #line 3 "lex.yy.c"
+=======
+#line 2 "./lex.yy.c"
+
+#line 4 "./lex.yy.c"
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 
 #define  YY_INT_ALIGNED short int
 
@@ -373,8 +379,13 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
+<<<<<<< HEAD
 #define YY_NUM_RULES 44
 #define YY_END_OF_BUFFER 45
+=======
+#define YY_NUM_RULES 45
+#define YY_END_OF_BUFFER 46
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -384,6 +395,7 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[118] =
     {   0,
+<<<<<<< HEAD
         0,    0,   45,   43,    4,    4,   36,   43,   37,   38,
        31,   29,   21,   30,   35,   32,   17,   17,   20,   28,
        22,   27,   12,   39,   40,   12,   12,   12,   12,   12,
@@ -392,6 +404,16 @@ static const flex_int16_t yy_accept[118] =
         9,   12,   12,   12,   12,   34,   18,    3,    0,    1,
        19,    0,   15,   14,   14,   12,   12,   12,    5,   12,
        12,   12,   18,   19,   18,    2,   12,   10,   12,   12,
+=======
+        0,    0,   46,   44,    1,    1,   37,   44,   38,   39,
+       32,   30,   22,   31,   36,   33,   17,   17,   21,   29,
+       23,   28,   12,   40,   41,   12,   12,   12,   12,   12,
+       12,   42,   44,   43,   27,   34,   20,    4,    2,   20,
+       16,   13,   14,   17,   25,   26,   24,   12,   12,   12,
+        9,   12,   12,   12,   12,   35,   19,    4,    0,    2,
+       20,    0,   15,   14,   14,   12,   12,   12,    5,   12,
+       12,   12,   19,   18,   19,    3,   12,   10,   12,   12,
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
        12,   12,   12,    6,   12,   12,   11,   12,    8,    7,
        12,   12,   12,   12,   12,   12,   12,   12,   12,   12,
 
@@ -545,11 +567,19 @@ static const flex_int16_t yy_chk[249] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
+<<<<<<< HEAD
 static const flex_int32_t yy_rule_can_match_eol[45] =
     {   0,
 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0,     };
+=======
+static const flex_int32_t yy_rule_can_match_eol[46] =
+    {   0,
+1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0,     };
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -565,6 +595,7 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
+<<<<<<< HEAD
 #line 1 "lexical.l"
 #define YY_NO_INPUT 1
 #line 7 "lexical.l"
@@ -625,6 +656,28 @@ ASTNode* ast_root = NULL;
 /* 浮点数正则 */
 /* 标识符与注释 */
 #line 628 "lex.yy.c"
+=======
+#line 1 "./lexical.l"
+#define YY_NO_INPUT 1
+#line 7 "./lexical.l"
+#include "lexical.h" 
+#include "tree.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include "syntax.tab.h"
+
+/* 错误标志 */
+int lexical_error_occurred = 0;
+ASTNodeList* ast_node_list = NULL; 
+ASTNode* ast_root = NULL;
+#line 585 "./lex.yy.c"
+/* 正则别名（修复转义错误和规则定义） */
+/* 整数正则（无修改，已正确） */
+/* 浮点数正则（无修改，已正确） */
+#line 589 "./lex.yy.c"
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 
 #define INITIAL 0
 
@@ -839,10 +892,17 @@ YY_DECL
 		}
 
 	{
+<<<<<<< HEAD
 #line 84 "lexical.l"
 
 
 #line 846 "lex.yy.c"
+=======
+#line 45 "./lexical.l"
+
+
+#line 807 "./lex.yy.c"
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -910,6 +970,7 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
+<<<<<<< HEAD
 YY_RULE_SETUP
 #line 86 "lexical.l"
 { /* 丢弃单行注释 */ }
@@ -919,19 +980,42 @@ case 2:
 YY_RULE_SETUP
 #line 87 "lexical.l"
 { /* 丢弃多行注释 */ }
+=======
+/* rule 1 can match eol */
+YY_RULE_SETUP
+#line 47 "./lexical.l"
+{ /* 忽略空白符 */ }
+	YY_BREAK
+case 2:
+YY_RULE_SETUP
+#line 49 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Unsupported single-line comment\n", yylineno); 
+}
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
+<<<<<<< HEAD
 #line 88 "lexical.l"
 { 
     lexical_error_occurred = 1;
     printf("Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
 }
+=======
+#line 53 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Unsupported multi-line comment\n", yylineno); 
+}
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
+<<<<<<< HEAD
 #line 93 "lexical.l"
 { /* 丢弃空白符 */ }
 	YY_BREAK
@@ -1148,6 +1232,480 @@ YY_RULE_SETUP
 ECHO;
 	YY_BREAK
 #line 1151 "lex.yy.c"
+=======
+#line 57 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Unclosed multi-line comment\n", yylineno); 
+}
+	YY_BREAK
+case 5:
+YY_RULE_SETUP
+#line 62 "./lexical.l"
+{ 
+    yylval.node = ast_new_type("int");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return TYPE; 
+}
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 70 "./lexical.l"
+{ 
+    yylval.node = ast_new_type("float");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return TYPE; 
+}
+	YY_BREAK
+case 7:
+YY_RULE_SETUP
+#line 78 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("STRUCT");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return STRUCT; 
+}
+	YY_BREAK
+case 8:
+YY_RULE_SETUP
+#line 86 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RETURN");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return RETURN; 
+}
+	YY_BREAK
+case 9:
+YY_RULE_SETUP
+#line 94 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("IF");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return IF; 
+}
+	YY_BREAK
+case 10:
+YY_RULE_SETUP
+#line 102 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("ELSE");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return ELSE; 
+}
+	YY_BREAK
+case 11:
+YY_RULE_SETUP
+#line 110 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("WHILE");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno; 
+    add_ast_node(yylval.node);
+    return WHILE; 
+}
+	YY_BREAK
+case 12:
+YY_RULE_SETUP
+#line 119 "./lexical.l"
+{    
+    yylval.node = ast_new_id(yytext); 
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node);
+    return ID; 
+}
+	YY_BREAK
+case 13:
+YY_RULE_SETUP
+#line 128 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Illegal octal number '%s'\n", yylineno, yytext); 
+}
+	YY_BREAK
+case 14:
+YY_RULE_SETUP
+#line 132 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Illegal hexadecimal number '%s'\n", yylineno, yytext); 
+}
+	YY_BREAK
+case 15:
+YY_RULE_SETUP
+#line 136 "./lexical.l"
+{ 
+    yylval.node = ast_new_int(strtoll(yytext, NULL, 16));
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return INT; 
+}
+	YY_BREAK
+case 16:
+YY_RULE_SETUP
+#line 144 "./lexical.l"
+{ 
+    yylval.node = ast_new_int(strtoll(yytext, NULL, 8));
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return INT; 
+}
+	YY_BREAK
+case 17:
+YY_RULE_SETUP
+#line 152 "./lexical.l"
+{ 
+    yylval.node = ast_new_int(strtoll(yytext, NULL, 10));
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return INT; 
+}
+	YY_BREAK
+case 18:
+YY_RULE_SETUP
+#line 161 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Unsupported exponential floating-point number '%s'\n", yylineno, yytext); 
+}
+	YY_BREAK
+case 19:
+YY_RULE_SETUP
+#line 165 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Illegal floating-point number '%s'\n", yylineno, yytext); 
+}
+	YY_BREAK
+case 20:
+YY_RULE_SETUP
+#line 169 "./lexical.l"
+{ 
+    yylval.node = ast_new_float(atof(yytext));
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return FLOAT; 
+}
+	YY_BREAK
+case 21:
+YY_RULE_SETUP
+#line 178 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("SEMI");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return SEMI; 
+}
+	YY_BREAK
+case 22:
+YY_RULE_SETUP
+#line 186 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("COMMA");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return COMMA; 
+}
+	YY_BREAK
+case 23:
+YY_RULE_SETUP
+#line 194 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("ASSIGNOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return ASSIGNOP; 
+}
+	YY_BREAK
+case 24:
+YY_RULE_SETUP
+#line 202 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RELOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RELOP; 
+}
+	YY_BREAK
+case 25:
+YY_RULE_SETUP
+#line 210 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RELOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RELOP; 
+}
+	YY_BREAK
+case 26:
+YY_RULE_SETUP
+#line 218 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RELOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RELOP; 
+}
+	YY_BREAK
+case 27:
+YY_RULE_SETUP
+#line 226 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RELOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RELOP; 
+}
+	YY_BREAK
+case 28:
+YY_RULE_SETUP
+#line 234 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RELOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RELOP; 
+}
+	YY_BREAK
+case 29:
+YY_RULE_SETUP
+#line 242 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RELOP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RELOP; 
+}
+	YY_BREAK
+case 30:
+YY_RULE_SETUP
+#line 250 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("PLUS");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return PLUS; 
+}
+	YY_BREAK
+case 31:
+YY_RULE_SETUP
+#line 258 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("MINUS");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return MINUS; 
+}
+	YY_BREAK
+case 32:
+YY_RULE_SETUP
+#line 266 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("STAR");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return STAR; 
+}
+	YY_BREAK
+case 33:
+YY_RULE_SETUP
+#line 274 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("DIV");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return DIV; 
+}
+	YY_BREAK
+case 34:
+YY_RULE_SETUP
+#line 282 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("AND");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return AND; 
+}
+	YY_BREAK
+case 35:
+YY_RULE_SETUP
+#line 290 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("OR");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return OR; 
+}
+	YY_BREAK
+case 36:
+YY_RULE_SETUP
+#line 298 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("DOT");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return DOT; 
+}
+	YY_BREAK
+case 37:
+YY_RULE_SETUP
+#line 306 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("NOT");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return NOT; 
+}
+	YY_BREAK
+case 38:
+YY_RULE_SETUP
+#line 314 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("LP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return LP; 
+}
+	YY_BREAK
+case 39:
+YY_RULE_SETUP
+#line 322 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RP");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RP; 
+}
+	YY_BREAK
+case 40:
+YY_RULE_SETUP
+#line 330 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("LB");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return LB; 
+}
+	YY_BREAK
+case 41:
+YY_RULE_SETUP
+#line 338 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RB");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RB; 
+}
+	YY_BREAK
+case 42:
+YY_RULE_SETUP
+#line 346 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("LC");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return LC; 
+}
+	YY_BREAK
+case 43:
+YY_RULE_SETUP
+#line 354 "./lexical.l"
+{ 
+    yylval.node = ast_new_token("RC");
+    ast_set_line(yylval.node, yylineno);
+    yylloc.first_line = yylineno;
+    yylloc.last_line = yylineno;
+    add_ast_node(yylval.node); 
+    return RC; 
+}
+	YY_BREAK
+case 44:
+YY_RULE_SETUP
+#line 363 "./lexical.l"
+{ 
+    lexical_error_occurred = 1;
+    printf("Error type A at Line %d: Mysterious character '%s'\n", yylineno, yytext); 
+}
+	YY_BREAK
+case 45:
+YY_RULE_SETUP
+#line 368 "./lexical.l"
+ECHO;
+	YY_BREAK
+#line 1371 "./lex.yy.c"
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2123,6 +2681,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
+<<<<<<< HEAD
 #line 152 "lexical.l"
 
 
@@ -2167,3 +2726,22 @@ void free_ast_nodes() {
     ast_node_list = NULL;
 }
 
+=======
+#line 368 "./lexical.l"
+
+
+void add_ast_node(ASTNode* node) {
+    if (!node) return;
+    ASTNodeList* new_node = (ASTNodeList*)malloc(sizeof(ASTNodeList));
+    new_node->node = node;
+    new_node->next = NULL;
+    
+    if (!ast_node_list) {
+        ast_node_list = new_node;
+    } else {
+        ASTNodeList* curr = ast_node_list;
+        while (curr->next) curr = curr->next;
+        curr->next = new_node;
+    }
+}
+>>>>>>> fc27de1a03d32c668374ce94014f4e76a2cd3bf3
