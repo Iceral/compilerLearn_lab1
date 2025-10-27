@@ -124,7 +124,11 @@ static FieldList buildFieldListFromDefList(ASTNode* DefList, int* pCount, int* p
                     strncpy(dupName, nm?nm:"", 31);
                 }
             }
-            /* 字段不应带初始化：若需要也可报 15；此处允许但忽略初始化 */
+            /* 结构体字段不允许指定初值 */
+            if (Dec->nchild == 3) {                 // Dec -> VarDec ASSIGNOP Exp
+                serr(15, Dec->line, "Field \"%s\" cannot have an initializer in struct", nm?nm:"");
+                /* 如果还想继续往下分析，可以把初值子树跳过去 */
+            }
 
             *tail = makeField(nm?nm:"", full, NULL);
             tail = &((*tail)->tail);
