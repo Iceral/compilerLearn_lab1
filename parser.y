@@ -170,16 +170,19 @@ ExtDef: Specifier ExtDecList SEMI
 {
     // 错误处理1：任意错误 + 分号（如int a b;）
     syntaxError++;  // 错误计数+1
+    yyerrok;
 }
 | Specifier error SEMI 
 {
     // 错误处理2：类型说明符 + 错误 + 分号（如int ;）
     syntaxError++;
+    yyerrok;
 }
 | error Specifier SEMI 
 {
     // 错误处理3：错误 + 类型说明符 + 分号（如a int;）
     syntaxError++;
+    yyerrok;
 };
 
 // 外部声明列表：单个变量声明（或多个声明用逗号分隔）
@@ -195,11 +198,7 @@ ExtDecList: VarDec
     $$ = create_ast_node("ExtDecList", @$.first_line);
     add_child_nodes($$, 3, $1, $2, $3);
 }
-| VarDec error ExtDefList 
-{
-    // 错误处理：变量声明 + 错误 + 外部定义列表（如a b int c;）
-    syntaxError++;
-};
+;
 
 
 // 2. 类型说明符（基础类型与结构体）

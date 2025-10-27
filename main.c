@@ -12,6 +12,9 @@ extern int yyparse(void);
 extern ASTNode* ast_root;
 extern int syntaxError;
 extern int lexical_error_occurred;
+/* 语义分析（在 semantic.c 中实现） */
+extern void semanticAnalysis(ASTNode* root);
+extern int  semantic_error_count;
 int main(int argc, char** argv) {
     if (argc <= 1) {
         fprintf(stderr, "Usage: %s <input.cmm>\n", argv[0]);
@@ -25,14 +28,21 @@ int main(int argc, char** argv) {
     int ret = yyparse();   /* 0 = success; nonzero = syntax error */
     fclose(f);
 
-    /* 按实验要求：若存在词法/语法错误，只输出错误信息，且不打印语法树。
-       这里假设：
-         - 词法错误：由词法器直接按格式打印（A 类），yyparse 可能仍返回 0/非 0；
-         - 语法错误：yyerror 按格式打印（B 类），yyparse 非 0。
-       最稳妥做法：仅当 ret==0 且 ast_root 非空时才打印语法树。 */
-    if (syntaxError == 0 && lexical_error_occurred == 0) {
-        //ret == 0 && ast_root
-        ast_print(ast_root, 0);
+    /* --- 实验二的判定逻辑 ---
+       1) 若词法/语法有任意错误：它们已经各自按格式输出到 stdout 了；
+          这里什么也不做（不打印语法树、不做语义分析）。
+       2) 只有当词法/语法均无错时，才进行语义分析；
+          语义分析只在有错时输出错误，无错不输出任何内容。
+    */
+    if (lexical_error_occurred || syntaxError || ret != 0) {
+        return 0;
+    }
+
+    /* 进行语义分析（内部会按“Error type X at Line N: ...”打印到 stdout） */
+    semanticAnalysis(ast_root);
+
+    /* 实验二不需要打印语法树；释放 AST 即可（可选） */
+    if (ast_root) {
         ast_free(ast_root);
         ast_root = NULL;
     }
