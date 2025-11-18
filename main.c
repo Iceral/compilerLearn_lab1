@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
     /* 【新增】如果语义分析无错，生成并输出 IR */
     if (semantic_error_count == 0) {
         ir_init();
-        print_relop_nodes(ast_root);
+        // print_relop_nodes(ast_root);
         translate_ast(ast_root);
-        printf("=== PRINTING IR ===\n");
+        // printf("=== PRINTING IR ===\n");
         ir_print_all(stdout);
         ir_free_all();
     }
