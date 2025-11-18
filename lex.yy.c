@@ -1119,6 +1119,7 @@ YY_RULE_SETUP
 #line 202 "./lexical.l"
 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup(">=");  /* ← 添加这行：设置具体操作符 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -1128,9 +1129,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 210 "./lexical.l"
+#line 211 "./lexical.l"
 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("<=");  /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -1140,9 +1142,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 218 "./lexical.l"
+#line 220 "./lexical.l"
 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("==");  /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -1152,9 +1155,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 226 "./lexical.l"
+#line 229 "./lexical.l"
 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("!=");  /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -1164,9 +1168,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 234 "./lexical.l"
+#line 238 "./lexical.l"
 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup(">");   /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -1176,9 +1181,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 242 "./lexical.l"
+#line 247 "./lexical.l"
 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("<");   /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -1188,7 +1194,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 250 "./lexical.l"
+#line 256 "./lexical.l"
 { 
     yylval.node = ast_new_token("PLUS");
     ast_set_line(yylval.node, yylineno);
@@ -1200,7 +1206,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 258 "./lexical.l"
+#line 264 "./lexical.l"
 { 
     yylval.node = ast_new_token("MINUS");
     ast_set_line(yylval.node, yylineno);
@@ -1212,7 +1218,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 266 "./lexical.l"
+#line 272 "./lexical.l"
 { 
     yylval.node = ast_new_token("STAR");
     ast_set_line(yylval.node, yylineno);
@@ -1224,7 +1230,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 274 "./lexical.l"
+#line 280 "./lexical.l"
 { 
     yylval.node = ast_new_token("DIV");
     ast_set_line(yylval.node, yylineno);
@@ -1236,7 +1242,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 282 "./lexical.l"
+#line 288 "./lexical.l"
 { 
     yylval.node = ast_new_token("AND");
     ast_set_line(yylval.node, yylineno);
@@ -1248,7 +1254,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 290 "./lexical.l"
+#line 296 "./lexical.l"
 { 
     yylval.node = ast_new_token("OR");
     ast_set_line(yylval.node, yylineno);
@@ -1260,7 +1266,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 298 "./lexical.l"
+#line 304 "./lexical.l"
 { 
     yylval.node = ast_new_token("DOT");
     ast_set_line(yylval.node, yylineno);
@@ -1272,7 +1278,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 306 "./lexical.l"
+#line 312 "./lexical.l"
 { 
     yylval.node = ast_new_token("NOT");
     ast_set_line(yylval.node, yylineno);
@@ -1284,7 +1290,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 314 "./lexical.l"
+#line 320 "./lexical.l"
 { 
     yylval.node = ast_new_token("LP");
     ast_set_line(yylval.node, yylineno);
@@ -1296,7 +1302,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 322 "./lexical.l"
+#line 328 "./lexical.l"
 { 
     yylval.node = ast_new_token("RP");
     ast_set_line(yylval.node, yylineno);
@@ -1308,7 +1314,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 330 "./lexical.l"
+#line 336 "./lexical.l"
 { 
     yylval.node = ast_new_token("LB");
     ast_set_line(yylval.node, yylineno);
@@ -1320,7 +1326,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 338 "./lexical.l"
+#line 344 "./lexical.l"
 { 
     yylval.node = ast_new_token("RB");
     ast_set_line(yylval.node, yylineno);
@@ -1332,7 +1338,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 346 "./lexical.l"
+#line 352 "./lexical.l"
 { 
     yylval.node = ast_new_token("LC");
     ast_set_line(yylval.node, yylineno);
@@ -1344,7 +1350,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 354 "./lexical.l"
+#line 360 "./lexical.l"
 { 
     yylval.node = ast_new_token("RC");
     ast_set_line(yylval.node, yylineno);
@@ -1356,7 +1362,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 363 "./lexical.l"
+#line 369 "./lexical.l"
 { 
     lexical_error_occurred = 1;
     printf("Error type A at Line %d: Mysterious character '%s'\n", yylineno, yytext); 
@@ -1364,10 +1370,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 368 "./lexical.l"
+#line 374 "./lexical.l"
 ECHO;
 	YY_BREAK
-#line 1371 "./lex.yy.c"
+#line 1377 "./lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2343,7 +2349,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 368 "./lexical.l"
+#line 374 "./lexical.l"
 
 
 void add_ast_node(ASTNode* node) {

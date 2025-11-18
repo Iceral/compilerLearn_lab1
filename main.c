@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "tree.h"
 #include "syntax.tab.h"
+#include "ir.h"  // ← 新增：包含 IR 头文件
 
 /* 这些符号由 Flex/Bison 提供 */
 extern FILE* yyin;
@@ -12,9 +14,25 @@ extern int yyparse(void);
 extern ASTNode* ast_root;
 extern int syntaxError;
 extern int lexical_error_occurred;
+
 /* 语义分析（在 semantic.c 中实现） */
 extern void semanticAnalysis(ASTNode* root);
 extern int  semantic_error_count;
+
+/* IR 翻译（假设你在 translate_ext.c 中实现了它） */
+extern void translate_ast(ASTNode* root);
+
+void print_relop_nodes(ASTNode* node) {
+    if (!node) return;
+    if (node->kind == ASTK_TOKEN && strcmp(node->name, "RELOP") == 0) {
+        printf("Found RELOP: sval='%s', line=%d\n", 
+               node->sval ? node->sval : "(null)", node->line);
+    }
+    for (int i = 0; i < node->nchild; i++) {
+        print_relop_nodes(node->child[i]);
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc <= 1) {
         fprintf(stderr, "Usage: %s <input.cmm>\n", argv[0]);
@@ -40,6 +58,16 @@ int main(int argc, char** argv) {
 
     /* 进行语义分析（内部会按“Error type X at Line N: ...”打印到 stdout） */
     semanticAnalysis(ast_root);
+
+    /* 【新增】如果语义分析无错，生成并输出 IR */
+    if (semantic_error_count == 0) {
+        ir_init();
+        print_relop_nodes(ast_root);
+        translate_ast(ast_root);
+        printf("=== PRINTING IR ===\n");
+        ir_print_all(stdout);
+        ir_free_all();
+    }
 
     /* 实验二不需要打印语法树；释放 AST 即可（可选） */
     if (ast_root) {
