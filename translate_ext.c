@@ -108,7 +108,6 @@ void translate_ast(const ASTNode* program_root) {
 }
 
 void translate_func_def(const ASTNode* extdef) {
-    // extdef: [Specifier, FunDec, CompSt]
     if (!extdef || extdef->nchild < 3) {
         fprintf(stderr, "Error: Invalid ExtDef for function definition\n");
         return;
@@ -122,13 +121,12 @@ void translate_func_def(const ASTNode* extdef) {
         return;
     }
 
-    // === FunDec 的第一个子节点就是函数名 (ID) ===
     if (fundec->nchild < 1) {
         fprintf(stderr, "Error: FunDec has no children\n");
         return;
     }
 
-    const ASTNode* id_node = fundec->child[0]; // ← 关键：索引是 0！
+    const ASTNode* id_node = fundec->child[0];
     if (!id_node || id_node->kind != ASTK_ID) {
         fprintf(stderr, "Error: Expected ID as first child of FunDec\n");
         return;
@@ -145,16 +143,21 @@ void translate_func_def(const ASTNode* extdef) {
     // 生成 FUNCTION 指令
     ir_append(ir_make_function(op_variable(func_name)));
 
+    // ✅ 新增：处理函数参数
+    // FunDec 的结构：
+    //   - FunDec -> ID LP VarList RP  (有参数)
+    //   - FunDec -> ID LP RP          (无参数)
+    if (fundec->nchild == 4) {
+        // 有参数：child[2] 是 VarList
+        const ASTNode* varlist = fundec->child[2];
+        if (varlist && strcmp(varlist->name, "VarList") == 0) {
+            translate_VarList(varlist);
+        }
+    }
+    // 如果 nchild == 3，则无参数，不需要生成 PARAM
+
     // 翻译函数体
     translate_CompSt(compst);
-    printf("DEBUG: FunDec has %d children:\n", fundec->nchild);
-    for (int i = 0; i < fundec->nchild; i++) {
-    ASTNode* c = fundec->child[i];
-    printf("  [%d] name='%s', kind=%d, sval='%s'\n",
-           i, c->name ? c->name : "(null)",
-           c->kind,
-           c->sval ? c->sval : "(null)");
-}
 }
 void translate_StmtList(const ASTNode* stmt_list) {
     // ✅ 添加计数器
@@ -503,6 +506,55 @@ int get_struct_field_offset(const char* field_name) {
     if (strcmp(field_name, "y") == 0) return 4;
     return 0;
 }
+
+// 处理函数参数列表
+void translate_VarList(const ASTNode* varlist) {
+    if (!varlist || strcmp(varlist->name, "VarList") != 0) {
+        return;
+    }
+
+    // VarList 有两种结构：
+    //   1. VarList -> ParamDec COMMA VarList  (多个参数)
+    //   2. VarList -> ParamDec                (单个参数)
+
+    const ASTNode* param_dec = varlist->child[0];
+    if (param_dec && strcmp(param_dec->name, "ParamDec") == 0) {
+        // ParamDec -> Specifier VarDec
+        if (param_dec->nchild >= 2) {
+            const ASTNode* vardec = param_dec->child[1];
+            translate_VarDec_for_param(vardec);
+        }
+    }
+
+    // 如果有更多参数，递归处理
+    if (varlist->nchild >= 3) {
+        const ASTNode* next_varlist = varlist->child[2];
+        translate_VarList(next_varlist);
+    }
+}
+
+// 从 VarDec 中提取参数名并生成 PARAM 指令
+void translate_VarDec_for_param(const ASTNode* vardec) {
+    if (!vardec || strcmp(vardec->name, "VarDec") != 0) {
+        return;
+    }
+
+    // VarDec 有两种结构：
+    //   1. VarDec -> ID              (普通变量)
+    //   2. VarDec -> VarDec LB INT RB (数组)
+
+    if (vardec->nchild == 1 && vardec->child[0]->kind == ASTK_ID) {
+        // 普通参数
+        const char* param_name = vardec->child[0]->sval;
+        Operand param = op_variable(param_name);
+        ir_append(ir_make_param(param));
+    } else if (vardec->nchild == 4) {
+        // 数组参数：递归找到最内层的 ID
+        translate_VarDec_for_param(vardec->child[0]);
+    }
+}
+
+
 
 Operand translate_Exp(const ASTNode* exp) {
     if (!exp) {
