@@ -14,6 +14,8 @@ void translate_CompSt(const ASTNode* compst);
 void translate_Stmt(const ASTNode* stmt);
 void translate_Cond(const ASTNode* node, Operand label_true, Operand label_false);
 void translate_StmtList(const ASTNode* stmt_list);
+void translate_VarList(const ASTNode* varlist);
+void translate_VarDec_for_param(const ASTNode* vardec);
 Operand translate_Exp(const ASTNode* exp);
 
 // ------------------ 辅助函数 ------------------
