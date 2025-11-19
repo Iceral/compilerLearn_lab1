@@ -16,6 +16,11 @@ void translate_Cond(const ASTNode* node, Operand label_true, Operand label_false
 void translate_StmtList(const ASTNode* stmt_list);
 void translate_VarList(const ASTNode* varlist);
 void translate_VarDec_for_param(const ASTNode* vardec);
+void translate_DefList(const ASTNode* deflist);
+void translate_Def(const ASTNode* def);
+void translate_DecList(const ASTNode* declist);
+void translate_Dec(const ASTNode* dec);
+const char* extract_var_name(const ASTNode* vardec);
 Operand translate_Exp(const ASTNode* exp);
 
 // ------------------ 辅助函数 ------------------
