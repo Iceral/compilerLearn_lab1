@@ -219,7 +219,7 @@ static void print_operand(FILE* out, Operand op) {
         case OP_LABEL: fprintf(out, "label%d", op->u.no); break;
         case OP_FUNCTION: fprintf(out, "%s", op->u.name); break;
         case OP_ADDRESS:
-            fprintf(out, "*");
+            fprintf(out, "&");
             print_operand(out, op->u.base);
             break;
     }
