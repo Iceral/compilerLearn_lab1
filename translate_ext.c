@@ -5,6 +5,49 @@
 #include <string.h>
 #include <assert.h>
 
+// ========== 新增：数组大小记录表 ==========
+typedef struct ArrayInfo_ {
+    char name[64];
+    int size;  // 元素个数
+    struct ArrayInfo_* next;
+} ArrayInfo;
+
+static ArrayInfo* array_info_list = NULL;
+
+// 记录数组信息
+void record_array_info(const char* name, int size) {
+    ArrayInfo* info = (ArrayInfo*)malloc(sizeof(ArrayInfo));
+    strncpy(info->name, name, 63);
+    info->name[63] = '\0';
+    info->size = size;
+    info->next = array_info_list;
+    array_info_list = info;
+}
+
+// 查询数组大小
+int get_array_size(const char* name) {
+    ArrayInfo* p = array_info_list;
+    while (p) {
+        if (strcmp(p->name, name) == 0) {
+            return p->size;
+        }
+        p = p->next;
+    }
+    return 0;  // 不是数组
+}
+
+// 清理数组信息表
+void clear_array_info() {
+    ArrayInfo* p = array_info_list;
+    while (p) {
+        ArrayInfo* next = p->next;
+        free(p);
+        p = next;
+    }
+    array_info_list = NULL;
+}
+// ==========================================
+
 void translate_ast(const ASTNode* root);
 void translate_func_def(const ASTNode* func_def_node);
 void translate_CompSt(const ASTNode* compst);
@@ -112,6 +155,69 @@ void translate_StmtList(const ASTNode* stmt_list) {
 
 //添加新函数
 
+// 生成数组拷贝循环
+void generate_array_copy_loop(const char* dest, const char* src, int element_count) {
+    // ✅ 使用 OP_ADDRESS 获取数组基地址
+    Operand dest_base = op_address(op_variable(dest));
+    Operand src_base = op_address(op_variable(src));
+    Operand loop_var = op_temp();
+    Operand size_op = op_constant(4);
+    
+    Operand label_cond = op_label();
+    Operand label_body = op_label();
+    Operand label_end = op_label();
+    
+    // loop_var := 0
+    ir_append(ir_make_assign(loop_var, op_constant(0)));
+    
+    // GOTO label_cond
+    ir_append(ir_make_goto(label_cond));
+    
+    // LABEL label_body:
+    ir_append(ir_make_label(label_body));
+    
+    // offset := loop_var * 4
+    Operand offset = op_temp();
+    ir_append(ir_make_binop(IR_MUL, offset, loop_var, size_op));
+    
+    // src_addr := src_base + offset
+    Operand src_addr = op_temp();
+    ir_append(ir_make_binop(IR_ADD, src_addr, src_base, offset));
+    
+    // value := *src_addr
+    Operand value = op_temp();
+    ir_append(ir_make_load(value, src_addr));
+    
+    // dest_addr := dest_base + offset
+    Operand dest_addr = op_temp();
+    ir_append(ir_make_binop(IR_ADD, dest_addr, dest_base, offset));
+    
+    // *dest_addr := value
+    ir_append(ir_make_store(dest_addr, value));
+    
+    // loop_var := loop_var + 1
+    Operand one = op_constant(1);
+    Operand new_loop_var = op_temp();
+    ir_append(ir_make_binop(IR_ADD, new_loop_var, loop_var, one));
+    ir_append(ir_make_assign(loop_var, new_loop_var));
+    
+    // ✅ 显式跳回条件检查
+    ir_append(ir_make_goto(label_cond));
+    
+    // LABEL label_cond:
+    ir_append(ir_make_label(label_cond));
+    
+    // IF loop_var < element_count GOTO label_body
+    Operand limit = op_constant(element_count);
+    ir_append(ir_make_if_goto(loop_var, "<", limit, label_body));
+    
+    // GOTO label_end
+    ir_append(ir_make_goto(label_end));
+    
+    // LABEL label_end:
+    ir_append(ir_make_label(label_end));
+}
+
 // 处理单个定义
 void translate_Def(const ASTNode* def) {
     if (!def || strcmp(def->name, "Def") != 0) return;
@@ -173,33 +279,43 @@ void translate_DecList(const ASTNode* declist) {
 }
 
 // 处理单个声明
+// 处理单个声明
+// 处理单个声明
 void translate_Dec(const ASTNode* dec) {
     if (!dec || strcmp(dec->name, "Dec") != 0) return;
 
-    // Dec 的结构：
-    //   Dec -> VarDec                (无初始化：int a;)
-    //   Dec -> VarDec ASSIGNOP Exp   (有初始化：int a = 123;)
+    const ASTNode* vardec = dec->child[0];
+    const char* var_name = extract_var_name(vardec);
+    
+    if (!var_name) return;
 
-    if (dec->nchild == 1) {
-        // 无初始化，不需要生成代码
+    // 检查是否是数组
+    int array_size = calculate_array_size(vardec);
+    
+    if (array_size > 0) {
+        // 是数组：生成 DEC 指令
+        Operand var = op_variable(var_name);
+        ir_append(ir_make_dec(var, array_size));
+        
+        // ✅ 记录数组信息
+        int element_count = array_size / 4;  // 字节数 / 4
+        record_array_info(var_name, element_count);
         return;
     }
 
+    // 普通变量：如果有初始化，生成赋值
     if (dec->nchild == 3) {
-        // 有初始化：VarDec ASSIGNOP Exp
-        const ASTNode* vardec = dec->child[0];
         const ASTNode* exp = dec->child[2];
-
-        // 从 VarDec 中提取变量名
-        const char* var_name = extract_var_name(vardec);
-        if (var_name) {
-            Operand r_val = translate_Exp(exp);
-            Operand l_var = op_variable(var_name);
-            ir_append(ir_make_assign(l_var, r_val));
-        }
+        Operand r_val = translate_Exp(exp);
+        Operand l_var = op_variable(var_name);
+        ir_append(ir_make_assign(l_var, r_val));
+    } else {
+        // 无初始化的普通变量，初始化为 0
+        Operand l_var = op_variable(var_name);
+        Operand zero = op_constant(0);
+        ir_append(ir_make_assign(l_var, zero));
     }
 }
-
 // 从 VarDec 中提取变量名
 const char* extract_var_name(const ASTNode* vardec) {
     if (!vardec || strcmp(vardec->name, "VarDec") != 0) {
@@ -222,7 +338,38 @@ const char* extract_var_name(const ASTNode* vardec) {
     return NULL;
 }
 
+// 计算数组大小（字节数）
+int calculate_array_size(const ASTNode* vardec) {
+    if (!vardec || strcmp(vardec->name, "VarDec") != 0) {
+        return 0;
+    }
 
+    // VarDec -> ID：普通变量，返回 0
+    if (vardec->nchild == 1) {
+        return 0;
+    }
+
+    // VarDec -> VarDec LB INT RB：数组
+    if (vardec->nchild == 4) {
+        const ASTNode* size_node = vardec->child[2];
+        if (size_node && size_node->kind == ASTK_INT) {
+            int dimension_size = (int)size_node->ival;
+            
+            // 递归计算内层维度
+            int inner_size = calculate_array_size(vardec->child[0]);
+            
+            if (inner_size == 0) {
+                // 一维数组：dimension_size * 4 字节
+                return dimension_size * 4;
+            } else {
+                // 多维数组：dimension_size * inner_size
+                return dimension_size * inner_size;
+            }
+        }
+    }
+
+    return 0;
+}
 
 
 void translate_CompSt(const ASTNode* compst) {
@@ -285,6 +432,47 @@ void translate_Stmt(const ASTNode* stmt) {
         
         if (child1 && child1->kind == ASTK_TOKEN && 
             strcmp(child1->name, "SEMI") == 0) {
+            
+            // ✅ 检查是否是数组赋值（ID = ID 形式）
+            // ✅ 检查是否是数组赋值（ID = ID 形式）
+            if (strcmp(child0->name, "Exp") == 0 && child0->nchild == 3) {
+                ASTNode* left = child0->child[0];
+                ASTNode* op = child0->child[1];
+                ASTNode* right = child0->child[2];
+                
+                if (op->kind == ASTK_TOKEN && strcmp(op->name, "ASSIGNOP") == 0 &&
+                    strcmp(left->name, "Exp") == 0 && left->nchild == 1 &&
+                    left->child[0]->kind == ASTK_ID &&
+                    strcmp(right->name, "Exp") == 0 && right->nchild == 1 &&
+                    right->child[0]->kind == ASTK_ID) {
+                    
+                    const char* dest = left->child[0]->sval;
+                    const char* src = right->child[0]->sval;
+                    
+                    // 【修改】get_array_size 返回的已经是元素个数了
+                    int src_count = get_array_size(src);
+                    
+                    if (src_count > 0) {
+                        int copy_count = src_count;
+                        
+                        // 【修改】dest 也是直接获取元素个数
+                        int dest_count = get_array_size(dest);
+                        
+                        if (dest_count > 0) {
+                            // 如果目标比源小，截断拷贝长度
+                            if (dest_count < copy_count) {
+                                copy_count = dest_count;
+                            }
+                        }
+
+                        // 生成拷贝循环
+                        generate_array_copy_loop(dest, src, copy_count);
+                        return;
+                    }
+                }
+            }
+            
+            // 普通表达式语句
             translate_Exp(child0);
             return;
         }
@@ -340,6 +528,7 @@ void translate_Stmt(const ASTNode* stmt) {
             ir_append(ir_make_goto(label_cond));
             ir_append(ir_make_label(label_body));
             translate_Stmt(body_stmt);
+            ir_append(ir_make_goto(label_cond));
             ir_append(ir_make_label(label_cond));
             translate_Cond(exp, label_body, label_end);
             ir_append(ir_make_label(label_end));
@@ -496,7 +685,7 @@ Operand translate_Exp(const ASTNode* exp) {
         return op_constant(0);
     }
 
-    // 单子节点的终结符
+    // ========== 单子节点的终结符 ==========
     if (strcmp(exp->name, "Exp") == 0 && exp->nchild == 1) {
         ASTNode* child = exp->child[0];
         
@@ -513,7 +702,7 @@ Operand translate_Exp(const ASTNode* exp) {
         }
     }
 
-    // 两子节点
+    // ========== 两子节点：一元运算符 ==========
     if (strcmp(exp->name, "Exp") == 0 && exp->nchild == 2) {
         ASTNode* op_node = exp->child[0];
         ASTNode* operand = exp->child[1];
@@ -533,7 +722,7 @@ Operand translate_Exp(const ASTNode* exp) {
         }
     }
 
-    // 三子节点
+    // ========== 三子节点 ==========
     if (strcmp(exp->name, "Exp") == 0 && exp->nchild == 3) {
         ASTNode* child0 = exp->child[0];
         ASTNode* child1 = exp->child[1];
@@ -565,7 +754,8 @@ Operand translate_Exp(const ASTNode* exp) {
 
         // 赋值表达式：Exp ASSIGNOP Exp
         if (child1->kind == ASTK_TOKEN && strcmp(child1->name, "ASSIGNOP") == 0) {
-            // 检查左侧是否是数组访问
+            
+            // ✅ 检查左侧是否是数组访问
             if (strcmp(child0->name, "Exp") == 0 && child0->nchild == 4) {
                 ASTNode* arr_exp = child0->child[0];
                 ASTNode* lb = child0->child[1];
@@ -575,19 +765,27 @@ Operand translate_Exp(const ASTNode* exp) {
                 if (lb->kind == ASTK_TOKEN && strcmp(lb->name, "LB") == 0 &&
                     rb->kind == ASTK_TOKEN && strcmp(rb->name, "RB") == 0) {
                     
-                    Operand base = translate_Exp(arr_exp);
-                    Operand index = translate_Exp(idx_exp);
-                    Operand size = op_constant(4);
-                    Operand offset = op_temp();
-                    Operand addr = op_temp();
-                    
-                    ir_append(ir_make_binop(IR_MUL, offset, index, size));
-                    ir_append(ir_make_binop(IR_ADD, addr, base, offset));
-                    
-                    Operand r_val = translate_Exp(child2);
-                    ir_append(ir_make_store(addr, r_val));
-                    
-                    return addr;
+                    // ✅ 检查是否是单个数组名
+                    if (strcmp(arr_exp->name, "Exp") == 0 && arr_exp->nchild == 1 &&
+                        arr_exp->child[0]->kind == ASTK_ID) {
+                        
+                        const char* array_name = arr_exp->child[0]->sval;
+                        
+                        // ✅ 使用 OP_ADDRESS
+                        Operand base = op_address(op_variable(array_name));
+                        Operand index = translate_Exp(idx_exp);
+                        Operand size = op_constant(4);
+                        Operand offset = op_temp();
+                        Operand addr = op_temp();
+                        
+                        ir_append(ir_make_binop(IR_MUL, offset, index, size));
+                        ir_append(ir_make_binop(IR_ADD, addr, base, offset));
+                        
+                        Operand r_val = translate_Exp(child2);
+                        ir_append(ir_make_store(addr, r_val));
+                        
+                        return addr;
+                    }
                 }
             }
             
@@ -628,30 +826,38 @@ Operand translate_Exp(const ASTNode* exp) {
         }
     }
 
-    // 四子节点
+    // ========== 四子节点 ==========
     if (strcmp(exp->name, "Exp") == 0 && exp->nchild == 4) {
         ASTNode* child0 = exp->child[0];
         ASTNode* child1 = exp->child[1];
         ASTNode* child2 = exp->child[2];
         ASTNode* child3 = exp->child[3];
 
-        // 数组访问（右值）：Exp LB Exp RB
+        // ✅ 数组访问（右值）：Exp LB Exp RB
         if (child1->kind == ASTK_TOKEN && strcmp(child1->name, "LB") == 0 &&
             child3->kind == ASTK_TOKEN && strcmp(child3->name, "RB") == 0) {
             
-            Operand base = translate_Exp(child0);
-            Operand index = translate_Exp(child2);
-            Operand size = op_constant(4);
-            Operand offset = op_temp();
-            Operand addr = op_temp();
+            // ✅ 检查 child0 是否是单个数组名
+            if (strcmp(child0->name, "Exp") == 0 && child0->nchild == 1 &&
+                child0->child[0]->kind == ASTK_ID) {
+                
+                const char* array_name = child0->child[0]->sval;
+                
+                // ✅ 使用 OP_ADDRESS
+                Operand base = op_address(op_variable(array_name));
+                Operand index = translate_Exp(child2);
+                Operand size = op_constant(4);
+                Operand offset = op_temp();
+                Operand addr = op_temp();
 
-            ir_append(ir_make_binop(IR_MUL, offset, index, size));
-            ir_append(ir_make_binop(IR_ADD, addr, base, offset));
+                ir_append(ir_make_binop(IR_MUL, offset, index, size));
+                ir_append(ir_make_binop(IR_ADD, addr, base, offset));
 
-            Operand value = op_temp();
-            ir_append(ir_make_load(value, addr));
+                Operand value = op_temp();
+                ir_append(ir_make_load(value, addr));
 
-            return value;
+                return value;
+            }
         }
 
         // 函数调用（带参数）：ID LP Args RP
