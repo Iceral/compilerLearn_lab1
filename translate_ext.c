@@ -110,24 +110,153 @@ void translate_StmtList(const ASTNode* stmt_list) {
     }
 }
 
+//添加新函数
+
+// 处理单个定义
+void translate_Def(const ASTNode* def) {
+    if (!def || strcmp(def->name, "Def") != 0) return;
+
+    // Def -> Specifier DecList SEMI
+    if (def->nchild >= 2) {
+        const ASTNode* declist = def->child[1];
+        if (declist && strcmp(declist->name, "DecList") == 0) {
+            translate_DecList(declist);
+        }
+    }
+}
+
+
+// 处理定义列表
+void translate_DefList(const ASTNode* deflist) {
+    if (!deflist) return;
+
+    // DefList 的结构：
+    //   DefList -> Def DefList  (多个定义)
+    //   DefList -> ε            (空)
+
+    if (deflist->nchild >= 1) {
+        const ASTNode* def = deflist->child[0];
+        if (def && strcmp(def->name, "Def") == 0) {
+            translate_Def(def);
+        }
+    }
+
+    if (deflist->nchild >= 2) {
+        const ASTNode* next_deflist = deflist->child[1];
+        if (next_deflist) {
+            translate_DefList(next_deflist);
+        }
+    }
+}
+
+// 处理声明列表
+void translate_DecList(const ASTNode* declist) {
+    if (!declist) return;
+
+    // DecList 的结构：
+    //   DecList -> Dec COMMA DecList  (多个声明)
+    //   DecList -> Dec                (单个声明)
+
+    if (declist->nchild >= 1) {
+        const ASTNode* dec = declist->child[0];
+        if (dec && strcmp(dec->name, "Dec") == 0) {
+            translate_Dec(dec);
+        }
+    }
+
+    if (declist->nchild >= 3) {
+        const ASTNode* next_declist = declist->child[2];
+        if (next_declist) {
+            translate_DecList(next_declist);
+        }
+    }
+}
+
+// 处理单个声明
+void translate_Dec(const ASTNode* dec) {
+    if (!dec || strcmp(dec->name, "Dec") != 0) return;
+
+    // Dec 的结构：
+    //   Dec -> VarDec                (无初始化：int a;)
+    //   Dec -> VarDec ASSIGNOP Exp   (有初始化：int a = 123;)
+
+    if (dec->nchild == 1) {
+        // 无初始化，不需要生成代码
+        return;
+    }
+
+    if (dec->nchild == 3) {
+        // 有初始化：VarDec ASSIGNOP Exp
+        const ASTNode* vardec = dec->child[0];
+        const ASTNode* exp = dec->child[2];
+
+        // 从 VarDec 中提取变量名
+        const char* var_name = extract_var_name(vardec);
+        if (var_name) {
+            Operand r_val = translate_Exp(exp);
+            Operand l_var = op_variable(var_name);
+            ir_append(ir_make_assign(l_var, r_val));
+        }
+    }
+}
+
+// 从 VarDec 中提取变量名
+const char* extract_var_name(const ASTNode* vardec) {
+    if (!vardec || strcmp(vardec->name, "VarDec") != 0) {
+        return NULL;
+    }
+
+    // VarDec 的结构：
+    //   VarDec -> ID              (普通变量)
+    //   VarDec -> VarDec LB INT RB (数组)
+
+    if (vardec->nchild == 1 && vardec->child[0]->kind == ASTK_ID) {
+        return vardec->child[0]->sval;
+    }
+
+    if (vardec->nchild == 4) {
+        // 数组：递归查找最内层的 ID
+        return extract_var_name(vardec->child[0]);
+    }
+
+    return NULL;
+}
+
+
+
+
 void translate_CompSt(const ASTNode* compst) {
     if (!compst) return;
 
+    ASTNode* deflist = NULL;
     ASTNode* stmt_list = NULL;
 
     if (compst->nchild == 4) {
+        // CompSt -> LC DefList StmtList RC
+        deflist = compst->child[1];
         stmt_list = compst->child[2];
     } else if (compst->nchild == 3) {
+        // CompSt -> LC StmtList RC (无局部变量)
         stmt_list = compst->child[1];
     } else {
+        // 尝试查找
         for (int i = 0; i < compst->nchild; ++i) {
-            if (compst->child[i] && strcmp(compst->child[i]->name, "StmtList") == 0) {
-                stmt_list = compst->child[i];
-                break;
+            if (compst->child[i]) {
+                if (strcmp(compst->child[i]->name, "DefList") == 0) {
+                    deflist = compst->child[i];
+                } else if (strcmp(compst->child[i]->name, "StmtList") == 0) {
+                    stmt_list = compst->child[i];
+                }
             }
         }
     }
 
+    // ✅ 先处理局部变量定义
+    if (deflist && strcmp(deflist->name, "DefList") == 0) {
+        translate_DefList(deflist);
+    }
+
+    // 然后处理语句列表
     if (stmt_list && strcmp(stmt_list->name, "StmtList") == 0) {
         translate_StmtList(stmt_list);
     }
