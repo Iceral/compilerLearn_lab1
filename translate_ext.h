@@ -21,6 +21,11 @@ void translate_Def(const ASTNode* def);
 void translate_DecList(const ASTNode* declist);
 void translate_Dec(const ASTNode* dec);
 const char* extract_var_name(const ASTNode* vardec);
+int calculate_array_size(const ASTNode* vardec);
+void generate_array_copy_loop(const char* dest, const char* src, int element_count);
+void record_array_info(const char* name, int size);
+int get_array_size(const char* name);
+void clear_array_info(void);
 Operand translate_Exp(const ASTNode* exp);
 
 // ------------------ 辅助函数 ------------------
