@@ -57,15 +57,31 @@ int main(int argc, char** argv) {
     }
 
     /* 进行语义分析（内部会按“Error type X at Line N: ...”打印到 stdout） */
-    semanticAnalysis(ast_root);
+    // semanticAnalysis(ast_root);
 
     /* 【新增】如果语义分析无错，生成并输出 IR */
     if (semantic_error_count == 0) {
+        // 初始化 IR 模块
         ir_init();
-        // print_relop_nodes(ast_root);
+
+        // 进行 IR 生成
         translate_ast(ast_root);
-        // printf("=== PRINTING IR ===\n");
-        ir_print_all(stdout);
+
+        // 打开输出文件（写模式）
+        FILE* out = fopen(argv[2], "w");
+        if (!out) {
+            perror("Error opening output file");
+            ir_free_all();  // 出现文件打开错误时，确保释放 IR 资源
+            return 1;
+        }
+
+        // 打印 IR 到文件
+        ir_print_all(out);
+
+        // 关闭输出文件
+        fclose(out);
+
+        // 清理 IR 内存
         ir_free_all();
     }
 
