@@ -1,0 +1,32 @@
+FUNCTION main :
+a := #0
+b := #0
+c := #0
+result := #0
+READ t1
+a := t1
+READ t2
+b := t2
+READ t3
+c := t3
+t4 := b * b
+t5 := #4 * a
+t6 := t5 * c
+t7 := t4 - t6
+result := t7
+IF result > #0 GOTO label1
+GOTO label2
+LABEL label1 :
+WRITE #2
+GOTO label3
+LABEL label2 :
+IF result == #0 GOTO label4
+GOTO label5
+LABEL label4 :
+WRITE #1
+GOTO label6
+LABEL label5 :
+WRITE #0
+LABEL label6 :
+LABEL label3 :
+RETURN #0

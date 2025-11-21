@@ -880,6 +880,7 @@ Operand translate_Exp(const ASTNode* exp) {
                     Operand args_array[32];
                     int arg_count = 0;
                     
+                    // 1. 先把所有参数的值算出来，存到数组里
                     ASTNode* current = child2;
                     while (current && strcmp(current->name, "Args") == 0) {
                         ASTNode* arg_exp = current->child[0];
@@ -892,7 +893,9 @@ Operand translate_Exp(const ASTNode* exp) {
                         }
                     }
                     
-                    for (int i = 0; i < arg_count; i++) {
+                    // 2. 【修改关键点】逆序生成 ARG 指令
+                    // 从最后一个参数开始 ARG，直到第一个
+                    for (int i = arg_count - 1; i >= 0; i--) {
                         ir_append(ir_make_arg(args_array[i]));
                     }
                     
