@@ -201,6 +201,7 @@ whitespace      [ \t\r\n]
 }
 ">="                { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup(">=");  /* ← 添加这行：设置具体操作符 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -209,6 +210,7 @@ whitespace      [ \t\r\n]
 }
 "<="                { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("<=");  /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -217,6 +219,7 @@ whitespace      [ \t\r\n]
 }
 "=="                { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("==");  /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -225,6 +228,7 @@ whitespace      [ \t\r\n]
 }
 "!="                { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("!=");  /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -233,6 +237,7 @@ whitespace      [ \t\r\n]
 }
 ">"                 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup(">");   /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;
@@ -241,6 +246,7 @@ whitespace      [ \t\r\n]
 }
 "<"                 { 
     yylval.node = ast_new_token("RELOP");
+    yylval.node->sval = strdup("<");   /* ← 添加这行 */
     ast_set_line(yylval.node, yylineno);
     yylloc.first_line = yylineno;
     yylloc.last_line = yylineno;

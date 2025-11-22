@@ -15,6 +15,10 @@ enum { SYM_VAR = 1, SYM_FUNC = 2, SYM_STRUCT = 3 };
 int semantic_error_count = 0;
 void semanticAnalysis(ASTNode* root);
 
+/* IR 限制相关标志 */
+int has_struct_var_or_param = 0;
+int has_multidim_array_or_array_param = 0;
+
 /* ----------------- 小工具 ----------------- */
 static inline const char* N(ASTNode* x){ return x ? x->name : ""; }
 static inline ASTNode*    C(ASTNode* x,int i){ return (x && i>=0 && i<x->nchild) ? x->child[i] : NULL; }
@@ -53,6 +57,20 @@ static Type makeFunction(Type ret, FieldList params, int paramnums){
     return t;
 }
 
+/* ---------- 内置函数注册 ---------- */
+static void register_builtin_functions(void) {
+    Type int_type = makeBasicInt();
+
+    // int read()
+    Type read_type = makeFunction(int_type, NULL, 0);
+    insertSymbol("read", read_type, SYM_FUNC);
+
+    // write(int) —— 返回类型设为 int（占位，IR 生成时忽略）
+    FieldList write_param = makeField("", int_type, NULL);
+    Type write_type = makeFunction(int_type, write_param, 1);
+    insertSymbol("write", write_type, SYM_FUNC);
+}
+
 /* ---------- Specifier 解析（TYPE / StructSpecifier） ---------- */
 static Type parse_StructSpecifier(ASTNode* SS); /* 前置声明 */
 
@@ -85,6 +103,39 @@ static Type buildVarDecType(ASTNode* VarDec, Type base, char** outName){
     return makeArray(inner, sz);
 }
 
+/* 判断是否为“多维数组”（维度 >= 2） */
+static int is_multidim_array(Type t) {
+    int dim = 0;
+    while (t && t->kind == ARRAY) {
+        ++dim;
+        t = t->u.array_.elem;
+        if (dim >= 2) return 1;
+    }
+    return 0;
+}
+
+/* is_param = 1 表示函数形参；0 表示一般变量 */
+void mark_ir_limitations(Type t, int is_param) {
+    printf("DEBUG Var type kind = %d, is_param = %d\n", t->kind, is_param);
+    if (!t) return;
+
+    if (t->kind == STRUCTURE) {
+        /* 结构体变量或结构体参数 */
+        has_struct_var_or_param = 1;
+    }
+    else if (t->kind == ARRAY) {
+        /* 数组参数（无论一维或多维） */
+        if (is_param) {
+            has_multidim_array_or_array_param = 1;
+        }
+
+        /* 多维数组变量 */
+        if (is_multidim_array(t)) {
+            has_multidim_array_or_array_param = 1;
+        }
+    }
+}
+
 /* ---------- 参数 VarList → FieldList ---------- */
 /* VarList -> ParamDec | ParamDec COMMA VarList ;  ParamDec -> Specifier VarDec */
 static FieldList buildParamList(ASTNode* VarList, int* outN){
@@ -93,7 +144,10 @@ static FieldList buildParamList(ASTNode* VarList, int* outN){
     ASTNode* Spec=C(ParamDec,0);
     ASTNode* VarDec=C(ParamDec,1);
     Type base=fromSpecifier(Spec);
-    char* name=NULL; Type full=buildVarDecType(VarDec, base, &name);
+    char* name=NULL; 
+    Type full=buildVarDecType(VarDec, base, &name);
+    /* 参数：is_param = 1 */
+    mark_ir_limitations(full, 1);
     FieldList head=makeField(name?name:"", full, NULL);
     int cnt=1;
     if(VarList->nchild==3){
@@ -166,7 +220,7 @@ static Type parse_StructSpecifier(ASTNode* SS){
 
         int fcnt=0, dupLine=0; char dupName[32];
         FieldList fields=buildFieldListFromDefList(DefList,&fcnt,&dupLine,dupName);
-        if(dupLine>0) serr(15, dupLine, "Redefined field \"%s\"", dupName); /* 样例要求 :contentReference[oaicite:6]{index=6} */
+        if(dupLine>0) serr(15, dupLine, "Redefined field \"%s\"", dupName); /* 样例要求 */
 
         Type t=newType(); t->kind=STRUCTURE;
         t->u.structure_.structure=fields;
@@ -174,12 +228,13 @@ static Type parse_StructSpecifier(ASTNode* SS){
 
         if(tagName){
             int ret=insertSymbol(tagName, t, SYM_STRUCT);
-            if(ret==0) serr(16, C(OptTag,0)->line, "Duplicated name \"%s\"", tagName); /* :contentReference[oaicite:7]{index=7} */
+            if(ret==0) serr(16, C(OptTag,0)->line, "Duplicated name \"%s\"", tagName); /* 样例要求 */
         }
         return t;
     }
     return NULL;
 }
+
 
 /* ---------- 语句/表达式 前置 ---------- */
 static Type typeOfExp(ASTNode* Exp);
@@ -193,9 +248,12 @@ static void handle_DefList(ASTNode* DefList){
 
         while(DecList){
             ASTNode* Dec=C(DecList,0); /* Dec -> VarDec | VarDec ASSIGNOP Exp */
-            char* name=NULL; Type full=buildVarDecType(C(Dec,0), base, &name);
+            char* name=NULL; 
+            Type full=buildVarDecType(C(Dec,0), base, &name);
+            /* 局部变量：is_param = 0 */
+            mark_ir_limitations(full, 0);
             int ret=insertSymbol(name, full, SYM_VAR);
-            if(ret==0) serr(3, C(Dec,0)->line, "Redefined variable \"%s\"", name?name:""); /* :contentReference[oaicite:8]{index=8} */
+            if(ret==0) serr(3, C(Dec,0)->line, "Redefined variable \"%s\"", name?name:""); /* 样例要求 */
 
             if(Dec->nchild==3){
                 Type rhs=typeOfExp(C(Dec,2));
@@ -242,7 +300,7 @@ static void handle_Stmt(ASTNode* Stmt, Type funcRet){
     if(Stmt->nchild>=3 && strcmp(N(C(Stmt,0)),"RETURN")==0){
         Type t=typeOfExp(C(Stmt,1));
         if(t && funcRet && !typeEqual(t, funcRet))
-            serr(8, C(Stmt,1)->line, "Type mismatched for return"); /* :contentReference[oaicite:9]{index=9} */
+            serr(8, C(Stmt,1)->line, "Type mismatched for return"); /* 样例要求 */
         return;
     }
     if(Stmt->nchild==5 && strcmp(N(C(Stmt,0)),"IF")==0){
@@ -276,7 +334,7 @@ static Type typeOfExp(ASTNode* Exp){
         strcmp(N(C(Exp,1)),"STAR")==0 || strcmp(N(C(Exp,1)),"DIV")==0 )){
         Type a=typeOfExp(C(Exp,0)), b=typeOfExp(C(Exp,2));
         if(!(a && b && a->kind==BASIC && b->kind==BASIC && typeEqual(a,b)))
-            serr(7, C(Exp,1)->line, "Type mismatched for operands"); /* :contentReference[oaicite:10]{index=10} */
+            serr(7, C(Exp,1)->line, "Type mismatched for operands"); /* 样例要求 */
         return a?a:b;
     }
 
@@ -303,7 +361,7 @@ static Type typeOfExp(ASTNode* Exp){
         char* fname=C(Exp,0)->sval;
         Symbol* fs=NULL;
         if(!lookupSymbol(fname,&fs) || !fs){ serr(2, C(Exp,0)->line, "Undefined function \"%s\"", fname); return NULL; }
-        if(!fs->type || fs->type->kind!=FUNCTION){ serr(11, C(Exp,0)->line, "\"%s\" is not a function", fname); return NULL; } /* :contentReference[oaicite:11]{index=11} */
+        if(!fs->type || fs->type->kind!=FUNCTION){ serr(11, C(Exp,0)->line, "\"%s\" is not a function", fname); return NULL; } /* 样例要求 */
         if(fs->type->u.function.paramnums!=0)
             serr(9, Exp->line, "Function \"%s\" is not applicable for arguments", fname);
         return fs->type->u.function.returnparam;
@@ -331,7 +389,7 @@ static Type typeOfExp(ASTNode* Exp){
             pa=pa->tail; pf=pf->tail; ++pos;
         }
         if(acnt != fs->type->u.function.paramnums)
-            serr(9, Exp->line, "Function \"%s\" is not applicable for arguments", fname); /* :contentReference[oaicite:12]{index=12} */
+            serr(9, Exp->line, "Function \"%s\" is not applicable for arguments", fname); /* 样例要求 */
         return fs->type->u.function.returnparam;
     }
 
@@ -342,7 +400,7 @@ static Type typeOfExp(ASTNode* Exp){
         if(!(arr && arr->kind==ARRAY)){
             /* 若是 ID，可按样例输出名字 */
             if(base->nchild==1 && strcmp(N(C(base,0)),"ID")==0)
-                serr(10, base->line, "\"%s\" is not an array", C(base,0)->sval);      /* :contentReference[oaicite:13]{index=13} */
+                serr(10, base->line, "\"%s\" is not an array", C(base,0)->sval);      /* 样例要求 */
             else
                 serr(10, base->line, "Not an array");
             return NULL;
@@ -351,7 +409,7 @@ static Type typeOfExp(ASTNode* Exp){
         if(!(idx && idx->kind==BASIC && idx->u.basic==0)){
             /* 若是浮点常数，按样例把字面量打印出来 */
             if(sub->nchild==1 && strcmp(N(C(sub,0)),"FLOAT")==0)
-                serr(12, sub->line, "\"%g\" is not an integer", C(sub,0)->fval);      /* :contentReference[oaicite:14]{index=14} */
+                serr(12, sub->line, "\"%g\" is not an integer", C(sub,0)->fval);      /* 样例要求 */
             else
                 serr(12, sub->line, "Array index is not an integer");
         }
@@ -400,6 +458,8 @@ static void handle_ExtDecList(ASTNode* ExtDecList, Type base){
         ASTNode* VarDec = C(ExtDecList, 0);
         char* name = NULL;
         Type full = buildVarDecType(VarDec, base, &name);
+        /* 全局变量：is_param = 0 */
+        mark_ir_limitations(full, 0);
         int ret = insertSymbol(name, full, SYM_VAR);
         if (ret == 0) {
             serr(3, VarDec->line, "Redefined variable \"%s\"", name?name:"");
@@ -463,6 +523,9 @@ void semanticAnalysis(ASTNode* root){
     if (!root) return;
     initSymbolTable();  /* 建立全局作用域哨兵 */
 
+    /* 【新增】注册内置函数 */
+    register_builtin_functions();
+
     /* Program -> ExtDefList */
     ASTNode* ExtDefList = C(root,0);
     while (ExtDefList && ExtDefList->nchild>0){
@@ -470,6 +533,4 @@ void semanticAnalysis(ASTNode* root){
         handle_ExtDef(ExtDef);
         ExtDefList = C(ExtDefList,1);
     }
-    /* 如需可在此 freeSymbolTable(); */
 }
-
