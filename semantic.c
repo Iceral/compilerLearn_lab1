@@ -15,6 +15,10 @@ enum { SYM_VAR = 1, SYM_FUNC = 2, SYM_STRUCT = 3 };
 int semantic_error_count = 0;
 void semanticAnalysis(ASTNode* root);
 
+/* IR 限制相关标志 */
+int has_struct_var_or_param = 0;
+int has_multidim_array_or_array_param = 0;
+
 /* ----------------- 小工具 ----------------- */
 static inline const char* N(ASTNode* x){ return x ? x->name : ""; }
 static inline ASTNode*    C(ASTNode* x,int i){ return (x && i>=0 && i<x->nchild) ? x->child[i] : NULL; }
@@ -99,6 +103,54 @@ static Type buildVarDecType(ASTNode* VarDec, Type base, char** outName){
     return makeArray(inner, sz);
 }
 
+/* 判断是否为“多维数组”（维度 >= 2） */
+static int is_multidim_array(Type t) {
+    int dim = 0;
+    while (t && t->kind == ARRAY) {
+        ++dim;
+        t = t->u.array_.elem;
+        if (dim >= 2) return 1;
+    }
+    return 0;
+}
+
+/* 取数组的“最内层元素类型”
+   例如：
+     int a[3][4]   → 返回 int
+     struct Good goods[10] → 返回 STRUCTURE 类型 Good */
+static Type array_base(Type t) {
+    while (t && t->kind == ARRAY) {
+        t = t->u.array_.elem;
+    }
+    return t;
+}
+
+/* is_param = 1 表示函数形参；0 表示一般变量 */
+void mark_ir_limitations(Type t, int is_param) {
+    printf("DEBUG Var type kind = %d, is_param = %d\n", t->kind, is_param);
+    if (!t) return;
+
+    if (t->kind == STRUCTURE) {
+        /* 结构体变量或结构体参数 */
+        has_struct_var_or_param = 1;
+    }
+    else if (t->kind == ARRAY) {
+        Type b = array_base(t);
+        if (b && b->kind == STRUCTURE) {
+            has_struct_var_or_param = 1;
+        }
+        /* 数组参数（无论一维或多维） */
+        if (is_param) {
+            has_multidim_array_or_array_param = 1;
+        }
+
+        /* 多维数组变量 */
+        if (is_multidim_array(t)) {
+            has_multidim_array_or_array_param = 1;
+        }
+    }
+}
+
 /* ---------- 参数 VarList → FieldList ---------- */
 /* VarList -> ParamDec | ParamDec COMMA VarList ;  ParamDec -> Specifier VarDec */
 static FieldList buildParamList(ASTNode* VarList, int* outN){
@@ -107,7 +159,10 @@ static FieldList buildParamList(ASTNode* VarList, int* outN){
     ASTNode* Spec=C(ParamDec,0);
     ASTNode* VarDec=C(ParamDec,1);
     Type base=fromSpecifier(Spec);
-    char* name=NULL; Type full=buildVarDecType(VarDec, base, &name);
+    char* name=NULL; 
+    Type full=buildVarDecType(VarDec, base, &name);
+    /* 参数：is_param = 1 */
+    mark_ir_limitations(full, 1);
     FieldList head=makeField(name?name:"", full, NULL);
     int cnt=1;
     if(VarList->nchild==3){
@@ -195,6 +250,7 @@ static Type parse_StructSpecifier(ASTNode* SS){
     return NULL;
 }
 
+
 /* ---------- 语句/表达式 前置 ---------- */
 static Type typeOfExp(ASTNode* Exp);
 
@@ -207,7 +263,10 @@ static void handle_DefList(ASTNode* DefList){
 
         while(DecList){
             ASTNode* Dec=C(DecList,0); /* Dec -> VarDec | VarDec ASSIGNOP Exp */
-            char* name=NULL; Type full=buildVarDecType(C(Dec,0), base, &name);
+            char* name=NULL; 
+            Type full=buildVarDecType(C(Dec,0), base, &name);
+            /* 局部变量：is_param = 0 */
+            mark_ir_limitations(full, 0);
             int ret=insertSymbol(name, full, SYM_VAR);
             if(ret==0) serr(3, C(Dec,0)->line, "Redefined variable \"%s\"", name?name:""); /* 样例要求 */
 
@@ -414,6 +473,8 @@ static void handle_ExtDecList(ASTNode* ExtDecList, Type base){
         ASTNode* VarDec = C(ExtDecList, 0);
         char* name = NULL;
         Type full = buildVarDecType(VarDec, base, &name);
+        /* 全局变量：is_param = 0 */
+        mark_ir_limitations(full, 0);
         int ret = insertSymbol(name, full, SYM_VAR);
         if (ret == 0) {
             serr(3, VarDec->line, "Redefined variable \"%s\"", name?name:"");
