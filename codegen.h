@@ -6,6 +6,6 @@
 #include <stdio.h>
 
 // 核心翻译函数：输入中间代码链表头 + 输出文件指针
-void generate_mips_code(InterCode *head, FILE *out);
-
+void generate_mips(InterCodes head, FILE *out);
+void generate_mips_code(InterCodes head, FILE *out);
 #endif

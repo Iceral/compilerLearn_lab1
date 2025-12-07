@@ -23,21 +23,6 @@ typedef struct {
 static StackMap *stack_map = NULL;
 static int stack_map_size = 0;
 
-// 辅助函数：查找变量的栈偏移（溢出时使用）
-static int find_stack_offset(const char *var_name) {
-    for (int i = 0; i < stack_map_size; i++) {
-        if (strcmp(stack_map[i].var_name, var_name) == 0) {
-            return stack_map[i].stack_offset;
-        }
-    }
-    // 未找到则分配新栈偏移
-    stack_map = realloc(stack_map, (stack_map_size + 1) * sizeof(StackMap));
-    strncpy(stack_map[stack_map_size].var_name, var_name, sizeof(stack_map[stack_map_size].var_name)-1);
-    stack_map[stack_map_size].stack_offset = stack_offset;
-    stack_offset += 4;  // 每个变量占4字节
-    stack_map_size++;
-    return stack_map[stack_map_size-1].stack_offset;
-}
 
 // 核心修改：使用B部分get_reg接口获取寄存器（支持栈溢出）
 static void get_operand_str(Operand op, char *buf, int buf_len, FILE *out) {
@@ -120,7 +105,7 @@ static void map_relop_to_binop(const char *relop, char *binop, int buf_len) {
 }
 
 // 核心翻译函数（集成寄存器分配初始化/收尾）
-void generate_mips_code(InterCode *head, FILE *out) {
+void generate_mips_code(InterCodes head, FILE *out) {
     assert(out != NULL);
     if (head == NULL) return;
 
@@ -134,7 +119,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
     mips_init(out);
 
     // 遍历中间代码链表
-    InterCode curr = head;
+    InterCodes next = head;
+    InterCode curr = next->code;
     while (curr != NULL) {
         char op1_buf[32], op2_buf[32], res_buf[32], label_buf[32], binop_buf[8];
         switch (curr->kind) {
@@ -146,7 +132,7 @@ void generate_mips_code(InterCode *head, FILE *out) {
             case IR_FUNCTION:
                 // 函数入口：初始化栈帧 + 寄存器分配
                 get_operand_str(curr->u.one.x, res_buf, sizeof(res_buf), out);
-                emit_text_begin();
+                emit_text_begin(out);
                 fprintf(out, ".globl %s\n", res_buf);
                 fprintf(out, "%s:\n", res_buf);
                 // 栈帧初始化（保存$fp/$ra，设置栈基址）
@@ -339,6 +325,7 @@ void generate_mips_code(InterCode *head, FILE *out) {
 
             case IR_DEC:
                 // 变量声明：预分配栈空间（若需要）
+                Operand op = curr->u.dec.x;
                 if (op->kind == OP_VARIABLE) {
                     char dec_var[64];
                     strncpy(dec_var, op->u.name, sizeof(dec_var)-1);
@@ -353,7 +340,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
                 fprintf(out, "    # Unhandled IR kind: %d\n", curr->kind);
                 break;
         }
-        curr = curr->next;
+        next = next->next;
+        curr = next->code;
     }
 
     // 程序退出指令
@@ -369,16 +357,16 @@ void generate_mips_code(InterCode *head, FILE *out) {
 }
 
 // 对外统一接口（保持不变）
-void generate_mips(InterCode *head, FILE *output_file) {
+void generate_mips(InterCodes head, FILE *output_file) {
     generate_mips_code(head, output_file);
 }
 
 // 调试用：打印中间代码
-void print_intercodes_for_debug(InterCode *head) {
+void print_intercodes_for_debug(InterCodes head) {
     if (head == NULL) return;
-    InterCode curr = head;
+    InterCodes curr = head;
     while (curr != NULL) {
-        print_intercode(stdout, curr);
+      //  print_intercode(stdout, curr->code);
         curr = curr->next;
     }
 }

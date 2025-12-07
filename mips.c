@@ -140,3 +140,19 @@ void emit_addi(FILE *file, const char *dest_reg, const char *src_reg, int imm)
 {
     fprintf(file, "    addi %s, %s, %d\n", dest_reg, src_reg, imm);
 }
+
+void emit_text_begin(FILE *file) {
+    fprintf(file, ".text\n");
+}
+
+void emit_syscall(FILE *file) {
+    fprintf(file, "    syscall\n");
+}
+
+void emit_mips_header(FILE *out) {
+   // 正确写法：通过fprintf输出汇编指令到文件
+    fprintf(out, ".data\n");
+    fprintf(out, "newline: .asciiz \"\\n\"\n");  // 输出汇编的换行符常量
+    fprintf(out, ".text\n");
+    fprintf(out, ".globl main\n");
+}

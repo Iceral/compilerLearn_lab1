@@ -20,4 +20,6 @@ void print_reg_map();
 // 清理栈信息
 void clear_stack_info();
 
+// 新增：声明find_stack_offset
+int find_stack_offset(const char *var_name);
 #endif // REGALLOC_H

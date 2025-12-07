@@ -35,6 +35,7 @@ void regalloc_init() {
     stack_map = NULL;
 }
 
+
 // 结束寄存器分配，清理资源
 void regalloc_finish() {
     // 重置寄存器使用状态
@@ -79,4 +80,20 @@ void clear_stack_info() {
         stack_map = NULL;
     }
     stack_map_size = 0;
+}
+
+// 辅助函数：查找变量的栈偏移（溢出时使用）
+int find_stack_offset(const char *var_name) {
+    for (int i = 0; i < stack_map_size; i++) {
+        if (strcmp(stack_map[i].var_name, var_name) == 0) {
+            return stack_map[i].stack_offset;
+        }
+    }
+    // 未找到则分配新栈偏移
+    stack_map = realloc(stack_map, (stack_map_size + 1) * sizeof(StackMap));
+    strncpy(stack_map[stack_map_size].var_name, var_name, sizeof(stack_map[stack_map_size].var_name)-1);
+    stack_map[stack_map_size].stack_offset = stack_offset;
+    stack_offset += 4;  // 每个变量占4字节
+    stack_map_size++;
+    return stack_map[stack_map_size-1].stack_offset;
 }
