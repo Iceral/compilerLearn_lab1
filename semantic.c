@@ -114,6 +114,17 @@ static int is_multidim_array(Type t) {
     return 0;
 }
 
+/* 取数组的“最内层元素类型”
+   例如：
+     int a[3][4]   → 返回 int
+     struct Good goods[10] → 返回 STRUCTURE 类型 Good */
+static Type array_base(Type t) {
+    while (t && t->kind == ARRAY) {
+        t = t->u.array_.elem;
+    }
+    return t;
+}
+
 /* is_param = 1 表示函数形参；0 表示一般变量 */
 void mark_ir_limitations(Type t, int is_param) {
     printf("DEBUG Var type kind = %d, is_param = %d\n", t->kind, is_param);
@@ -124,6 +135,10 @@ void mark_ir_limitations(Type t, int is_param) {
         has_struct_var_or_param = 1;
     }
     else if (t->kind == ARRAY) {
+        Type b = array_base(t);
+        if (b && b->kind == STRUCTURE) {
+            has_struct_var_or_param = 1;
+        }
         /* 数组参数（无论一维或多维） */
         if (is_param) {
             has_multidim_array_or_array_param = 1;

@@ -309,3 +309,20 @@ void ir_print_all(FILE* out) {
         print_intercode(out, p->code);
     }
 }
+
+
+// ===================== 实验四新增实现 =====================
+/**
+ * 调试用打印中间代码（直接复用实验三的 print_intercodes 函数）
+ */
+void print_intercodes_for_debug(InterCode head) {
+    print_intercodes(stdout, head);
+}
+
+/**
+ * 转发到代码生成模块的核心函数
+ */
+void generate_mips(InterCode head, FILE *output_file) {
+    // 调用 codegen.c 中的核心翻译函数
+    generate_mips_code(head, output_file);
+}
