@@ -9,7 +9,7 @@ void mips_init(FILE *f)
     fprintf(f, "_ret: .asciiz \"\\n\"\n\n");
 
     // 写入.globl main和.text段
-    fprintf(f, ".globl main\n");
+    //fprintf(f, ".globl main\n");
     fprintf(f, ".text\n\n");
 
     // 实现read函数
@@ -154,5 +154,5 @@ void emit_mips_header(FILE *out) {
     fprintf(out, ".data\n");
     fprintf(out, "newline: .asciiz \"\\n\"\n");  // 输出汇编的换行符常量
     fprintf(out, ".text\n");
-    fprintf(out, ".globl main\n");
+    //fprintf(out, ".globl main\n");
 }
