@@ -100,19 +100,18 @@ InterCode ir_make_store(Operand addr, Operand value);
 /* 打印 */
 void ir_print_all(FILE* out);
 
-
 // ===================== 实验四新增内容（核心修改点） =====================
 /**
  * @brief 调试用：打印中间代码（供代码生成模块调用）
  * @param head 中间代码链表头节点
  */
-void print_intercodes_for_debug(InterCode head);
+void print_intercodes_for_debug(InterCodes head);
 
 /**
  * @brief 对外统一接口：将中间代码翻译为MIPS指令
  * @param head 中间代码链表头节点
  * @param output_file MIPS指令输出文件指针
  */
-void generate_mips(InterCode head, FILE *output_file);
+void generate_mips(InterCodes head, FILE *output_file);
 
 #endif /* IR_H_ */

@@ -1,10 +1,11 @@
 #include "codegen.h"
 #include "mips.h"
-#include "regalloc.h"
+
 #include "ir.h"
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // 寄存器名映射（与MIPS32临时寄存器对应）
 static const char *reg_names[] = {
@@ -12,6 +13,9 @@ static const char *reg_names[] = {
     "$t5", "$t6", "$t7", "$t8", "$t9"
 };
 #define REG_COUNT (sizeof(reg_names)/sizeof(reg_names[0]))
+
+// 寄存器使用状态：0 表示空闲，1 表示占用
+static int reg_usage[REG_COUNT];
 
 // 栈偏移管理（处理寄存器溢出）
 #define STACK_BASE_OFFSET 4  // 栈基址偏移（$fp为栈帧指针）
@@ -23,8 +27,68 @@ typedef struct {
 static StackMap *stack_map = NULL;
 static int stack_map_size = 0;
 
+// 初始化寄存器分配系统
+void regalloc_init() {
+    // 初始化寄存器使用状态
+    for (int i = 0; i < REG_COUNT; i++) {
+        reg_usage[i] = 0;  // 所有寄存器初始化为空闲状态
+    }
+
+    // 初始化栈管理
+    stack_offset = STACK_BASE_OFFSET;
+    stack_map_size = 0;
+    stack_map = NULL;
+}
+
+
+// 结束寄存器分配，清理资源
+void regalloc_finish() {
+    // 重置寄存器使用状态
+    for (int i = 0; i < REG_COUNT; i++) {
+        reg_usage[i] = 0;
+    }
+
+    // 清理栈映射表
+    if (stack_map != NULL) {
+        free(stack_map);
+        stack_map = NULL;
+    }
+}
+
+// 获取给定变量的寄存器
+int get_reg(const char* var_name) {
+    // 如果有空闲寄存器，直接返回
+    for (int i = 0; i < REG_COUNT; i++) {
+        if (reg_usage[i] == 0) {
+            reg_usage[i] = 1;  // 标记寄存器为已占用
+            return i;  // 返回寄存器索引
+        }
+    }
+    // 如果没有空闲寄存器，返回栈溢出处理
+    int stack_offset = find_stack_offset(var_name);
+    return -1;  // 返回 -1 表示需要栈溢出处理
+}
+
+// 打印当前寄存器映射（可选，用于调试）
+void print_reg_map() {
+    printf("寄存器使用状态：\n");
+    for (int i = 0; i < REG_COUNT; i++) {
+        printf("$t%d: %s\n", i, reg_usage[i] == 0 ? "空闲" : "占用");
+    }
+}
+
+
+// 清理栈信息
+void clear_stack_info() {
+    if (stack_map != NULL) {
+        free(stack_map);
+        stack_map = NULL;
+    }
+    stack_map_size = 0;
+}
+
 // 辅助函数：查找变量的栈偏移（溢出时使用）
-static int find_stack_offset(const char *var_name) {
+int find_stack_offset(const char *var_name) {
     for (int i = 0; i < stack_map_size; i++) {
         if (strcmp(stack_map[i].var_name, var_name) == 0) {
             return stack_map[i].stack_offset;
@@ -49,7 +113,7 @@ static void get_operand_str(Operand op, char *buf, int buf_len, FILE *out) {
     int stack_off = -1;
 
     switch (op->kind) {
-        case OP_VARIABLE:
+        case OP_VARIABLE: {
             // 1. 获取变量名
             strncpy(var_name, op->u.name, sizeof(var_name)-1);
             // 2. 调用B部分接口分配寄存器
@@ -63,8 +127,8 @@ static void get_operand_str(Operand op, char *buf, int buf_len, FILE *out) {
                 snprintf(buf, buf_len, "-%d($fp)", stack_off);
             }
             break;
-
-        case OP_TEMP:
+        }
+        case OP_TEMP: {
             // 临时变量命名：t1/t2/...
             snprintf(var_name, sizeof(var_name), "t%d", op->u.no);
             reg_idx = get_reg(var_name);
@@ -75,27 +139,28 @@ static void get_operand_str(Operand op, char *buf, int buf_len, FILE *out) {
                 snprintf(buf, buf_len, "-%d($fp)", stack_off);
             }
             break;
-
-        case OP_CONSTANT:
+        }
+        case OP_CONSTANT: {
             snprintf(buf, buf_len, "%d", op->u.value);
             break;
-
-        case OP_LABEL:
+        }
+        case OP_LABEL: {
             snprintf(buf, buf_len, "label%d", op->u.no);
             break;
-
-        case OP_FUNCTION:
+        }
+        case OP_FUNCTION: {
             strncpy(buf, op->u.name, buf_len-1);
             break;
-
-        case OP_ADDRESS:
+        }
+        case OP_ADDRESS: {
             // 地址操作数：&var → 变量的寄存器/栈地址
             get_operand_str(op->u.base, buf, buf_len, out);
             break;
-
-        default:
+        }
+        default: {
             strncpy(buf, "$zero", buf_len-1);
             break;
+        }
     }
 
     // 溢出处理：若变量在栈中，使用前先加载到临时寄存器（仅针对运算操作数）
@@ -120,7 +185,7 @@ static void map_relop_to_binop(const char *relop, char *binop, int buf_len) {
 }
 
 // 核心翻译函数（集成寄存器分配初始化/收尾）
-void generate_mips_code(InterCode *head, FILE *out) {
+void generate_mips_code(InterCodes head, FILE *out) {
     assert(out != NULL);
     if (head == NULL) return;
 
@@ -133,20 +198,26 @@ void generate_mips_code(InterCode *head, FILE *out) {
     // 初始化MIPS生成（输出.data段和read/write函数）
     mips_init(out);
 
-    // 遍历中间代码链表
-    InterCode curr = head;
-    while (curr != NULL) {
+    // 遍历中间代码链表（修复边界判断，避免空指针）
+    InterCodes next = head;
+    while (next != NULL) {  // 先判断next是否为空，再取code
+        InterCode curr = next->code;
+        if (curr == NULL) {
+            next = next->next;
+            continue;
+        }
+
         char op1_buf[32], op2_buf[32], res_buf[32], label_buf[32], binop_buf[8];
         switch (curr->kind) {
-            case IR_LABEL:
+            case IR_LABEL: {
                 get_operand_str(curr->u.one.x, label_buf, sizeof(label_buf), out);
                 emit_label(out, label_buf);
                 break;
-
-            case IR_FUNCTION:
+            }
+            case IR_FUNCTION: {
                 // 函数入口：初始化栈帧 + 寄存器分配
                 get_operand_str(curr->u.one.x, res_buf, sizeof(res_buf), out);
-                emit_text_begin();
+                emit_text_begin(out);
                 fprintf(out, ".globl %s\n", res_buf);
                 fprintf(out, "%s:\n", res_buf);
                 // 栈帧初始化（保存$fp/$ra，设置栈基址）
@@ -155,8 +226,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
                 emit_sw(out, "$ra", 4, "$sp");
                 emit_move(out, "$fp", "$sp");
                 break;
-
-            case IR_ASSIGN:
+            }
+            case IR_ASSIGN: {
                 // 赋值：dst := src → 处理寄存器/栈存储
                 get_operand_str(curr->u.assign.left, res_buf, sizeof(res_buf), out);
                 get_operand_str(curr->u.assign.right, op1_buf, sizeof(op1_buf), out);
@@ -181,11 +252,11 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     }
                 }
                 break;
-
+            }
             case IR_ADD:
             case IR_SUB:
             case IR_MUL:
-            case IR_DIV:
+            case IR_DIV: {
                 get_operand_str(curr->u.binop.result, res_buf, sizeof(res_buf), out);
                 get_operand_str(curr->u.binop.op1, op1_buf, sizeof(op1_buf), out);
                 get_operand_str(curr->u.binop.op2, op2_buf, sizeof(op2_buf), out);
@@ -208,13 +279,13 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     emit_sw(out, res_buf, res_stack, "$fp");
                 }
                 break;
-
-            case IR_GOTO:
+            }
+            case IR_GOTO: {
                 get_operand_str(curr->u.one.x, label_buf, sizeof(label_buf), out);
                 emit_j(out, label_buf);
                 break;
-
-            case IR_IF_GOTO:
+            }
+            case IR_IF_GOTO: {
                 get_operand_str(curr->u.if_goto.x, op1_buf, sizeof(op1_buf), out);
                 get_operand_str(curr->u.if_goto.y, op2_buf, sizeof(op2_buf), out);
                 get_operand_str(curr->u.if_goto.label, label_buf, sizeof(label_buf), out);
@@ -238,8 +309,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
                 else if (strcmp(binop_buf, "ble") == 0) emit_ble(out, op1_buf, op2_buf, label_buf);
                 else if (strcmp(binop_buf, "bge") == 0) emit_bge(out, op1_buf, op2_buf, label_buf);
                 break;
-
-            case IR_RETURN:
+            }
+            case IR_RETURN: {
                 // 返回：处理返回值 + 恢复栈帧 + 收尾寄存器分配
                 get_operand_str(curr->u.one.x, op1_buf, sizeof(op1_buf), out);
                 emit_move(out, "$v0", op1_buf);  // 返回值存入$v0
@@ -254,8 +325,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
                 
                 emit_jr(out, "$ra");
                 break;
-
-            case IR_READ:
+            }
+            case IR_READ: {
                 get_operand_str(curr->u.one.x, res_buf, sizeof(res_buf), out);
                 emit_jal(out, "read");
                 emit_move(out, res_buf, "$v0");
@@ -270,14 +341,14 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     emit_sw(out, res_buf, read_stack, "$fp");
                 }
                 break;
-
-            case IR_WRITE:
+            }
+            case IR_WRITE: {
                 get_operand_str(curr->u.one.x, op1_buf, sizeof(op1_buf), out);
                 emit_move(out, "$a0", op1_buf);
                 emit_jal(out, "write");
                 break;
-
-            case IR_CALL:
+            }
+            case IR_CALL: {
                 get_operand_str(curr->u.call.result, res_buf, sizeof(res_buf), out);
                 get_operand_str(curr->u.call.func, label_buf, sizeof(label_buf), out);
                 emit_jal(out, label_buf);
@@ -295,8 +366,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     emit_sw(out, res_buf, call_stack, "$fp");
                 }
                 break;
-
-            case IR_PARAM:
+            }
+            case IR_PARAM: {  // 修复：添加{}包裹static变量
                 static int param_idx = 0;
                 get_operand_str(curr->u.one.x, op1_buf, sizeof(op1_buf), out);
                 if (param_idx < 4) {
@@ -310,8 +381,8 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     param_idx++;
                 }
                 break;
-
-            case IR_ARG:
+            }
+            case IR_ARG: {  // 修复：添加{}包裹static变量
                 static int arg_idx = 0;
                 get_operand_str(curr->u.one.x, op1_buf, sizeof(op1_buf), out);
                 if (arg_idx < 4) {
@@ -324,21 +395,22 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     emit_sw(out, op1_buf, 0, "$sp");
                 }
                 break;
-
-            case IR_LOAD:
+            }
+            case IR_LOAD: {
                 get_operand_str(curr->u.load.left, res_buf, sizeof(res_buf), out);
                 get_operand_str(curr->u.load.right, op1_buf, sizeof(op1_buf), out);
                 emit_lw(out, res_buf, 0, op1_buf);
                 break;
-
-            case IR_STORE:
+            }
+            case IR_STORE: {
                 get_operand_str(curr->u.store.addr, op1_buf, sizeof(op1_buf), out);
                 get_operand_str(curr->u.store.value, op2_buf, sizeof(op2_buf), out);
                 emit_sw(out, op2_buf, 0, op1_buf);
                 break;
-
-            case IR_DEC:
+            }
+            case IR_DEC: {  // 修复：添加{}包裹Operand声明
                 // 变量声明：预分配栈空间（若需要）
+                Operand op = curr->u.dec.x;
                 if (op->kind == OP_VARIABLE) {
                     char dec_var[64];
                     strncpy(dec_var, op->u.name, sizeof(dec_var)-1);
@@ -348,12 +420,13 @@ void generate_mips_code(InterCode *head, FILE *out) {
                     }
                 }
                 break;
-
-            default:
+            }
+            default: {
                 fprintf(out, "    # Unhandled IR kind: %d\n", curr->kind);
                 break;
+            }
         }
-        curr = curr->next;
+        next = next->next;
     }
 
     // 程序退出指令
@@ -369,16 +442,16 @@ void generate_mips_code(InterCode *head, FILE *out) {
 }
 
 // 对外统一接口（保持不变）
-void generate_mips(InterCode *head, FILE *output_file) {
+void generate_mips(InterCodes head, FILE *output_file) {
     generate_mips_code(head, output_file);
 }
 
 // 调试用：打印中间代码
-void print_intercodes_for_debug(InterCode *head) {
+void print_intercodes_for_debug(InterCodes head) {
     if (head == NULL) return;
-    InterCode curr = head;
+    InterCodes curr = head;
     while (curr != NULL) {
-        print_intercode(stdout, curr);
+        // print_intercode(stdout, curr->code);  // 注释保留，按需启用
         curr = curr->next;
     }
 }
