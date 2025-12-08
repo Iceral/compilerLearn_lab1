@@ -4,7 +4,7 @@
 #include "tree.h"
 #include "syntax.tab.h"
 #include "ir.h"
-#include "codegen.h"   // ★★ 新增：生成 MIPS 的接口
+#include "codegen.h"
 
 extern FILE* yyin;
 extern void yyrestart(FILE* f);
@@ -27,59 +27,78 @@ int has_suffix(const char* name, const char* suf) {
 }
 
 int main(int argc, char** argv) {
-    if (argc <= 1) {
-        fprintf(stderr, "Usage: %s input.cmm output.s\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <input.cmm> [output.s]\n", argv[0]);
+        fprintf(stderr, "  If output.s is given and ends with .s, generate MIPS assembly\n");
+        fprintf(stderr, "  Otherwise, print intermediate code\n");
         return 1;
     }
 
-    FILE* f = fopen(argv[1], "r");
-    if (!f) { perror(argv[1]); return 1; }
+    const char* input_file = argv[1];
+    const char* output_file = (argc >= 3) ? argv[2] : NULL;
+
+    FILE* f = fopen(input_file, "r");
+    if (!f) {
+        perror(input_file);
+        return 1;
+    }
 
     yyrestart(f);
-    int ret = yyparse();
+    yyparse();  // 直接调用，不需要返回值了（全局变量会标记错误）
     fclose(f);
 
-    if (lexical_error_occurred || syntaxError || ret != 0) {
-        return 0;
+    // 有词法/语法错误，直接退出
+    if (lexical_error_occurred || syntaxError) {
+        fprintf(stderr, "Compilation terminated due to lexical/syntax errors.\n");
+        return 1;
     }
 
+    // 语义分析（实验四可以注释掉）
     // semanticAnalysis(ast_root);
+    // if (semantic_error_count > 0) {
+    //     fprintf(stderr, "Compilation terminated due to %d semantic error(s).\n", semantic_error_count);
+    //     return 1;
+    // }
 
-    if (semantic_error_count == 0) {
+    // 翻译为中间代码
+    ir_init();
+    translate_ast(ast_root);
+    clear_array_info();
 
-        ir_init();
-        translate_ast(ast_root);
-        clear_array_info();
+    // 输出阶段
+    FILE* out = stdout;
+    int close_out = 0;
 
-        if (argc >= 3) {
-            FILE* out = fopen(argv[2], "w");
-            if (!out) {
-                perror(argv[2]);
-                ir_free_all();
-                return 1;
-            }
-
-            if (has_suffix(argv[2], ".s")) {
-                // ★★ 用户要求输出 MIPS 汇编
-                generate_mips(ir_head, out);
-            } else {
-                // 默认打印 IR
-                ir_print_all(out);
-            }
-
-            fclose(out);
-        } else {
-            // 默认输出 IR 到 stdout
-            ir_print_all(stdout);
+    if (output_file) {
+        out = fopen(output_file, "w");
+        if (!out) {
+            perror(output_file);
+            ir_free_all();
+            return 1;
         }
-
-        ir_free_all();
+        close_out = 1;
     }
+
+    if (output_file && has_suffix(output_file, ".s")) {
+        // 生成 MIPS 汇编
+        generate_mips(ir_head, out);
+        printf("MIPS assembly written to %s\n", output_file);
+    } else {
+        // 默认打印中间代码（带格式更好看）
+        fprintf(out, "========== Intermediate Code ==========\n");
+        ir_print_all(out);
+        if (output_file)
+            printf("Intermediate code written to %s\n", output_file);
+    }
+
+    if (close_out) fclose(out);
+    ir_free_all();
 
     if (ast_root) {
         ast_free(ast_root);
         ast_root = NULL;
     }
 
+    printf("Compilation successful!\n");
     return 0;
 }
