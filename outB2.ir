@@ -1,0 +1,69 @@
+FUNCTION main :
+num := #0
+DEC arr 40
+key := #0
+i := #0
+res := #0
+left := #0
+right := #0
+READ t1
+num := t1
+IF num > #10 GOTO label1
+GOTO label2
+LABEL label1 :
+num := #10
+LABEL label2 :
+i := #0
+GOTO label3
+LABEL label4 :
+t2 := i * #4
+t3 := &arr + t2
+READ t4
+*t3 := t4
+t5 := i + #1
+i := t5
+GOTO label3
+LABEL label3 :
+IF i < num GOTO label4
+GOTO label5
+LABEL label5 :
+READ t6
+key := t6
+left := #0
+t7 := num - #1
+right := t7
+GOTO label6
+LABEL label7 :
+t8 := left + right
+t9 := t8 / #2
+i := t9
+t10 := i * #4
+t11 := &arr + t10
+t12 := *t11
+IF t12 == key GOTO label9
+GOTO label10
+LABEL label9 :
+WRITE i
+RETURN #0
+GOTO label11
+LABEL label10 :
+t14 := i * #4
+t15 := &arr + t14
+t16 := *t15
+IF t16 > key GOTO label12
+GOTO label13
+LABEL label12 :
+t17 := i - #1
+right := t17
+GOTO label14
+LABEL label13 :
+t18 := i + #1
+left := t18
+LABEL label14 :
+LABEL label11 :
+GOTO label6
+LABEL label6 :
+IF left < right GOTO label7
+GOTO label8
+LABEL label8 :
+RETURN #0

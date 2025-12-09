@@ -1,0 +1,264 @@
+FUNCTION main :
+n := #5
+DEC arr 20
+DEC tmp 20
+i := #0
+intv := #0
+s1 := #0
+e1 := #0
+cur1 := #0
+s2 := #0
+e2 := #0
+cur2 := #0
+i := #0
+GOTO label1
+LABEL label2 :
+t1 := i * #4
+t2 := &arr + t1
+READ t3
+*t2 := t3
+t4 := i + #1
+i := t4
+GOTO label1
+LABEL label1 :
+IF i < n GOTO label2
+GOTO label3
+LABEL label3 :
+intv := #1
+GOTO label4
+LABEL label5 :
+i := #0
+GOTO label7
+LABEL label8 :
+s1 := i
+t5 := s1 + intv
+e1 := t5
+cur1 := s1
+s2 := e1
+t6 := s2 + intv
+e2 := t6
+cur2 := s2
+GOTO label10
+LABEL label11 :
+t7 := cur1 * #4
+t8 := &arr + t7
+t9 := *t8
+t10 := cur2 * #4
+t11 := &arr + t10
+t12 := *t11
+IF t9 < t12 GOTO label13
+GOTO label14
+LABEL label13 :
+t13 := i * #4
+t14 := &tmp + t13
+t15 := cur1 * #4
+t16 := &arr + t15
+t17 := *t16
+*t14 := t17
+t18 := cur1 + #1
+cur1 := t18
+GOTO label15
+LABEL label14 :
+t19 := i * #4
+t20 := &tmp + t19
+t21 := cur2 * #4
+t22 := &arr + t21
+t23 := *t22
+*t20 := t23
+t24 := cur2 + #1
+cur2 := t24
+LABEL label15 :
+t25 := i + #1
+i := t25
+GOTO label10
+LABEL label10 :
+IF cur1 < e1 GOTO label16
+GOTO label12
+LABEL label16 :
+IF cur2 < e2 GOTO label11
+GOTO label12
+LABEL label12 :
+GOTO label17
+LABEL label18 :
+t26 := i * #4
+t27 := &tmp + t26
+t28 := cur1 * #4
+t29 := &arr + t28
+t30 := *t29
+*t27 := t30
+t31 := cur1 + #1
+cur1 := t31
+t32 := i + #1
+i := t32
+GOTO label17
+LABEL label17 :
+IF cur1 < e1 GOTO label18
+GOTO label19
+LABEL label19 :
+GOTO label20
+LABEL label21 :
+t33 := i * #4
+t34 := &tmp + t33
+t35 := cur2 * #4
+t36 := &arr + t35
+t37 := *t36
+*t34 := t37
+t38 := cur2 + #1
+cur2 := t38
+t39 := i + #1
+i := t39
+GOTO label20
+LABEL label20 :
+IF cur2 < e2 GOTO label21
+GOTO label22
+LABEL label22 :
+GOTO label7
+LABEL label7 :
+t40 := #2 * intv
+t41 := n - t40
+IF i <= t41 GOTO label8
+GOTO label9
+LABEL label9 :
+t42 := i + intv
+IF t42 < n GOTO label23
+GOTO label24
+LABEL label23 :
+s1 := i
+t43 := s1 + intv
+e1 := t43
+cur1 := s1
+s2 := e1
+e2 := n
+cur2 := s2
+GOTO label26
+LABEL label27 :
+t44 := cur1 * #4
+t45 := &arr + t44
+t46 := *t45
+t47 := cur2 * #4
+t48 := &arr + t47
+t49 := *t48
+IF t46 < t49 GOTO label29
+GOTO label30
+LABEL label29 :
+t50 := i * #4
+t51 := &tmp + t50
+t52 := cur1 * #4
+t53 := &arr + t52
+t54 := *t53
+*t51 := t54
+t55 := cur1 + #1
+cur1 := t55
+t56 := i + #1
+i := t56
+GOTO label31
+LABEL label30 :
+t57 := i * #4
+t58 := &tmp + t57
+t59 := cur2 * #4
+t60 := &arr + t59
+t61 := *t60
+*t58 := t61
+t62 := cur2 + #1
+cur2 := t62
+t63 := i + #1
+i := t63
+LABEL label31 :
+GOTO label26
+LABEL label26 :
+IF cur1 < e1 GOTO label32
+GOTO label28
+LABEL label32 :
+IF cur2 < e2 GOTO label27
+GOTO label28
+LABEL label28 :
+GOTO label33
+LABEL label34 :
+t64 := i * #4
+t65 := &tmp + t64
+t66 := cur1 * #4
+t67 := &arr + t66
+t68 := *t67
+*t65 := t68
+t69 := cur1 + #1
+cur1 := t69
+t70 := i + #1
+i := t70
+GOTO label33
+LABEL label33 :
+IF cur1 < e1 GOTO label34
+GOTO label35
+LABEL label35 :
+GOTO label36
+LABEL label37 :
+t71 := i * #4
+t72 := &tmp + t71
+t73 := cur2 * #4
+t74 := &arr + t73
+t75 := *t74
+*t72 := t75
+t76 := cur2 + #1
+cur2 := t76
+t77 := i + #1
+i := t77
+GOTO label36
+LABEL label36 :
+IF cur2 < e2 GOTO label37
+GOTO label38
+LABEL label38 :
+GOTO label25
+LABEL label24 :
+GOTO label39
+LABEL label40 :
+t78 := i * #4
+t79 := &tmp + t78
+t80 := i * #4
+t81 := &arr + t80
+t82 := *t81
+*t79 := t82
+t83 := i + #1
+i := t83
+GOTO label39
+LABEL label39 :
+IF i < n GOTO label40
+GOTO label41
+LABEL label41 :
+LABEL label25 :
+i := #0
+GOTO label42
+LABEL label43 :
+t84 := i * #4
+t85 := &arr + t84
+t86 := i * #4
+t87 := &tmp + t86
+t88 := *t87
+*t85 := t88
+t89 := i + #1
+i := t89
+GOTO label42
+LABEL label42 :
+IF i < n GOTO label43
+GOTO label44
+LABEL label44 :
+t90 := intv * #2
+intv := t90
+GOTO label4
+LABEL label4 :
+IF intv < n GOTO label5
+GOTO label6
+LABEL label6 :
+i := #0
+GOTO label45
+LABEL label46 :
+t91 := i * #4
+t92 := &arr + t91
+t93 := *t92
+WRITE t93
+t95 := i + #1
+i := t95
+GOTO label45
+LABEL label45 :
+IF i < n GOTO label46
+GOTO label47
+LABEL label47 :
+RETURN #0

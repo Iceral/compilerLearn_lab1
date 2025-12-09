@@ -1,0 +1,118 @@
+FUNCTION mod :
+PARAM x
+PARAM y
+t1 := x / y
+t2 := t1 * y
+t3 := x - t2
+RETURN t3
+FUNCTION gcd :
+PARAM c
+PARAM d
+IF c == #0 GOTO label1
+GOTO label2
+LABEL label1 :
+RETURN d
+LABEL label2 :
+ARG c
+ARG d
+t4 := CALL mod
+ARG c
+ARG t4
+t5 := CALL gcd
+RETURN t5
+FUNCTION lcm :
+PARAM e
+PARAM f
+t6 := e * f
+ARG f
+ARG e
+t7 := CALL gcd
+t8 := t6 / t7
+RETURN t8
+FUNCTION main :
+n := #0
+i := #0
+g := #0
+tmp := #0
+sum := #0
+DEC a 200
+DEC b 200
+READ t9
+n := t9
+i := #0
+GOTO label3
+LABEL label4 :
+t10 := i * #4
+t11 := &a + t10
+READ t12
+*t11 := t12
+t13 := i * #4
+t14 := &b + t13
+READ t15
+*t14 := t15
+t16 := i + #1
+i := t16
+GOTO label3
+LABEL label3 :
+IF i < n GOTO label4
+GOTO label5
+LABEL label5 :
+t17 := #0 * #4
+t18 := &b + t17
+t19 := *t18
+tmp := t19
+i := #1
+GOTO label6
+LABEL label7 :
+t20 := i * #4
+t21 := &b + t20
+t22 := *t21
+ARG t22
+ARG tmp
+t23 := CALL lcm
+tmp := t23
+t24 := i + #1
+i := t24
+GOTO label6
+LABEL label6 :
+IF i < n GOTO label7
+GOTO label8
+LABEL label8 :
+i := #0
+GOTO label9
+LABEL label10 :
+t25 := i * #4
+t26 := &a + t25
+t27 := *t26
+t28 := i * #4
+t29 := &b + t28
+t30 := *t29
+t31 := tmp / t30
+t32 := t27 * t31
+t33 := sum + t32
+sum := t33
+t34 := i + #1
+i := t34
+GOTO label9
+LABEL label9 :
+IF i < n GOTO label10
+GOTO label11
+LABEL label11 :
+ARG tmp
+ARG sum
+t35 := CALL gcd
+g := t35
+t36 := sum / g
+sum := t36
+t37 := tmp / g
+tmp := t37
+IF tmp == #1 GOTO label12
+GOTO label13
+LABEL label12 :
+WRITE sum
+GOTO label14
+LABEL label13 :
+WRITE sum
+WRITE tmp
+LABEL label14 :
+RETURN #0

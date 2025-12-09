@@ -1,0 +1,28 @@
+FUNCTION main :
+answer := #0
+x := #369
+y := #258
+z := #147
+t1 := x + y
+t2 := t1 + z
+t3 := x - y
+t4 := t2 * t3
+t5 := x - z
+t6 := t4 / t5
+a := t6
+WRITE a
+t8 := a * #2
+t9 := z * #3
+t10 := t8 / t9
+t11 := a + t10
+a := t11
+WRITE a
+t13 := x * y
+t14 := y * z
+t15 := t13 + t14
+t16 := z * x
+t17 := t15 + t16
+t18 := t17 + a
+answer := t18
+WRITE answer
+RETURN #0

@@ -1,0 +1,154 @@
+FUNCTION factorial :
+PARAM m
+f_res := #1
+GOTO label1
+LABEL label2 :
+t1 := f_res * m
+f_res := t1
+t2 := m - #1
+m := t2
+GOTO label1
+LABEL label1 :
+IF m > #1 GOTO label2
+GOTO label3
+LABEL label3 :
+RETURN f_res
+FUNCTION cal_combiniation :
+PARAM c_base
+PARAM c_num
+ARG c_base
+t3 := CALL factorial
+ARG c_num
+t4 := CALL factorial
+t5 := c_base - c_num
+ARG t5
+t6 := CALL factorial
+t7 := t4 * t6
+t8 := t3 / t7
+RETURN t8
+FUNCTION cal_permutation :
+PARAM p_base
+PARAM p_num
+ARG p_base
+t9 := CALL factorial
+t10 := p_base - p_num
+ARG t10
+t11 := CALL factorial
+t12 := t9 / t11
+RETURN t12
+FUNCTION isqrt :
+PARAM n
+i := #0
+GOTO label4
+LABEL label5 :
+t13 := i * i
+IF t13 <= n GOTO label9
+GOTO label8
+LABEL label9 :
+t14 := i + #1
+t15 := i + #1
+t16 := t14 * t15
+IF t16 > n GOTO label7
+GOTO label8
+LABEL label7 :
+RETURN i
+LABEL label8 :
+t17 := i + #1
+i := t17
+GOTO label4
+LABEL label4 :
+IF i < n GOTO label5
+GOTO label6
+LABEL label6 :
+t18 := #0 - #1
+RETURN t18
+FUNCTION mod :
+PARAM k1
+PARAM k2
+IF k1 < #0 GOTO label10
+GOTO label13
+LABEL label13 :
+IF k2 <= #0 GOTO label10
+GOTO label11
+LABEL label10 :
+t19 := #0 - #1
+RETURN t19
+GOTO label12
+LABEL label11 :
+t20 := k1 / k2
+t21 := t20 * k2
+t22 := k1 - t21
+RETURN t22
+LABEL label12 :
+FUNCTION is_prime :
+PARAM l
+j := #2
+ARG l
+t23 := CALL isqrt
+end := t23
+GOTO label14
+LABEL label15 :
+ARG j
+ARG l
+t24 := CALL mod
+IF t24 == #0 GOTO label17
+GOTO label18
+LABEL label17 :
+RETURN #0
+LABEL label18 :
+t25 := j + #1
+j := t25
+GOTO label14
+LABEL label14 :
+IF j <= end GOTO label15
+GOTO label16
+LABEL label16 :
+RETURN #1
+FUNCTION main :
+READ t26
+base := t26
+READ t27
+key := t27
+ARG key
+ARG base
+t28 := CALL cal_combiniation
+com := t28
+ARG key
+ARG base
+t29 := CALL cal_permutation
+per := t29
+index := #1
+GOTO label19
+LABEL label20 :
+ARG index
+t30 := CALL is_prime
+IF t30 != #0 GOTO label22
+GOTO label23
+LABEL label22 :
+WRITE index
+LABEL label23 :
+t32 := index + #1
+index := t32
+GOTO label19
+LABEL label19 :
+IF index <= com GOTO label20
+GOTO label21
+LABEL label21 :
+index := #1
+GOTO label24
+LABEL label25 :
+ARG index
+t33 := CALL is_prime
+IF t33 != #0 GOTO label27
+GOTO label28
+LABEL label27 :
+WRITE index
+LABEL label28 :
+t35 := index + #1
+index := t35
+GOTO label24
+LABEL label24 :
+IF index <= per GOTO label25
+GOTO label26
+LABEL label26 :
+RETURN #0

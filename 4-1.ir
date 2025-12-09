@@ -1,0 +1,22 @@
+FUNCTION main :
+a := #0
+b := #1
+i := #0
+n := #0
+READ t1
+n := t1
+GOTO label1
+LABEL label2 :
+t2 := a + b
+c := t2
+WRITE b
+a := b
+b := c
+t4 := i + #1
+i := t4
+GOTO label1
+LABEL label1 :
+IF i < n GOTO label2
+GOTO label3
+LABEL label3 :
+RETURN #0

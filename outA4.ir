@@ -1,0 +1,22 @@
+FUNCTION factorial :
+PARAM m
+f_res := #1
+GOTO label1
+LABEL label2 :
+t1 := f_res * m
+f_res := t1
+t2 := m - #1
+m := t2
+GOTO label1
+LABEL label1 :
+IF m > #1 GOTO label2
+GOTO label3
+LABEL label3 :
+RETURN f_res
+FUNCTION main :
+READ t3
+n := t3
+ARG n
+t4 := CALL factorial
+WRITE t4
+RETURN #0

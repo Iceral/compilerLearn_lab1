@@ -1,0 +1,17 @@
+FUNCTION main :
+WRITE a
+t2 := a * #2
+t3 := z * #3
+t4 := t2 / t3
+t5 := a + t4
+a := t5
+WRITE a
+t7 := x * y
+t8 := y * z
+t9 := t7 + t8
+t10 := z * x
+t11 := t9 + t10
+t12 := t11 + a
+answer := t12
+WRITE answer
+RETURN #0

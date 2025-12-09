@@ -1,0 +1,56 @@
+FUNCTION main :
+DEC src 12
+DEC dst 12
+index := #0
+res := #0
+GOTO label1
+LABEL label2 :
+t1 := index * #4
+t2 := &src + t1
+READ t3
+*t2 := t3
+t4 := index + #1
+index := t4
+GOTO label1
+LABEL label1 :
+IF index < #3 GOTO label2
+GOTO label3
+LABEL label3 :
+index := #0
+GOTO label4
+LABEL label5 :
+t5 := index * #4
+t6 := &dst + t5
+t7 := index * #4
+t8 := &src + t7
+t9 := *t8
+t10 := t9 * #2
+*t6 := t10
+t11 := index + #1
+index := t11
+GOTO label4
+LABEL label4 :
+IF index < #3 GOTO label5
+GOTO label6
+LABEL label6 :
+index := #0
+GOTO label7
+LABEL label8 :
+t12 := index * #4
+t13 := &src + t12
+t14 := *t13
+t15 := res + t14
+t16 := index * #4
+t17 := &dst + t16
+t18 := *t17
+t19 := t15 + t18
+res := t19
+t20 := index + #1
+index := t20
+GOTO label7
+LABEL label7 :
+IF index < #3 GOTO label8
+GOTO label9
+LABEL label9 :
+WRITE res
+RETURN #0
