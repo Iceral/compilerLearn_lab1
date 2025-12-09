@@ -37,4 +37,9 @@ void emit_label(FILE* file, const char* label);
 // 其他指令
 void emit_addi(FILE* file, const char* dest_reg, const char* src_reg, int imm);
 
+// 必须声明，且参数匹配
+void emit_text_begin(FILE *file);
+void emit_syscall(FILE *file);
+void emit_mips_header(FILE *out);
+
 #endif /* MIPS_H_ */

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include "codegen.h"
 static void* xmalloc(size_t n) {
     void* p = malloc(n);
     if (!p) {
