@@ -622,22 +622,25 @@ void generate_mips_code(InterCodes head, FILE *out)
             InterCodes args[32];
             int arg_count = collect_args(p, args, 32);
 
-            for (int i = 0; i < arg_count; i++)
-            {
+            /* ---------- 参数传递 ---------- */
+            /* 前 4 个参数：直接进 $a0-$a3（顺序不变，别动） */
+            int i;
+            for (i = 0; i < arg_count && i < 4; i++) {
                 Operand arg_op = args[i]->code->u.one.x;
                 load_operand(arg_op, temp_reg(0), out);
 
-                if (i < 4)
-                {
-                    char a[8];
-                    sprintf(a, "$a%d", i);
-                    emit_move(out, a, temp_reg(0));
-                }
-                else
-                {
-                    emit_addi(out, "$sp", "$sp", -4);
-                    emit_sw(out, temp_reg(0), 0, "$sp");
-                }
+                char reg[8];
+                sprintf(reg, "$a%d", i);
+                emit_move(out, reg, temp_reg(0));
+            }
+
+            /* 第 5 个及以后参数：从“最后一个参数”开始反向压栈 */
+            for (i = arg_count - 1; i >= 4; i--) {
+                Operand arg_op = args[i]->code->u.one.x;
+                load_operand(arg_op, temp_reg(0), out);
+
+                emit_addi(out, "$sp", "$sp", -4);
+                emit_sw(out, temp_reg(0), 0, "$sp");
             }
 
             get_operand(c->u.call.result, z, 1, out);
